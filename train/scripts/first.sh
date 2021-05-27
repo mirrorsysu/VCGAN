@@ -20,7 +20,7 @@ python train.py \
 --video_imagelist_txt './txt/DAVIS_videvo_train_imagelist.txt' \
 \
 --epochs 101 \
---batch_size 16 \
+--batch_size 8 \
 --lr_g 1e-4 \
 --lr_d 1e-4 \
 --b1 0.5 \
@@ -44,7 +44,7 @@ python train.py \
 --norm 'in' \
 --init_type 'xavier' \
 --init_gain 0.02 \
---baseroot '/mnt/lustre/zhaoyuzhi/dataset/ILSVRC2012_train_256' \
+--baseroot '.' \
 --sample_size 1 \
 --crop_size 256 \
 --crop_size_h 256 \

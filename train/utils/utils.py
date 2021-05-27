@@ -13,21 +13,23 @@ from networks import pwcnet
 
 
 def create_generator(opt):
-    if opt.stage == 'Frist':
+    if opt.stage == 'First':
         colorizationnet = network.FirstStageNet(opt)
+        print("First stage Generator is created!")
     else:
         colorizationnet = network.SecondStageNet(opt)
+        print("Second stage Generator is created!")
 
     if not opt.load_model:
-        # Initialize the networks
-        print("Generator is created!")
         # Init the networks
         network.weights_init(colorizationnet, init_type=opt.init_type, init_gain=opt.init_gain)
         if opt.load_fe:
             pretrained_dict = torch.load(opt.fe_path)
             load_dict(colorizationnet.fenet, pretrained_dict)
             load_dict(colorizationnet.fenet2, pretrained_dict)
-        print("Generator is loaded [fenet:%s] [fenet2:%s]" % (opt.fe_path, opt.fe_path))
+            print("Generator is loaded [fenet:%s] [fenet2:%s]" % (opt.fe_path, opt.fe_path))
+        else:
+            print("Generator without load fe")
     else:
         # Initialize the networks
         pretrained_dict = torch.load(opt.load_path)

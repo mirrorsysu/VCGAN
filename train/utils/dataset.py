@@ -35,11 +35,11 @@ class ColorizationDataset(Dataset):
 
     def get_files(self, baseroot: Path):
         # Read a folder, return the complete path
-        ret = []
-        
+        print('read from %s' % (baseroot))
         suffixs = ['.jpg', '.png', '.jpeg', '.bmp'] 
         rs = baseroot.rglob('*.*')
         ret = list(filter(lambda p: p.suffix.lower() in suffixs, rs))
+        print('total count: %d' % (len(ret)))
 
         # Randomly sample the target slice
         sample_size = int(math.floor(len(ret) / self.opt.sample_size))
