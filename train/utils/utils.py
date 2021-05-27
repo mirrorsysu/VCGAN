@@ -24,10 +24,10 @@ def create_generator(opt):
         # Init the networks
         network.weights_init(colorizationnet, init_type=opt.init_type, init_gain=opt.init_gain)
         if opt.load_fe:
-            pretrained_dict = torch.load(opt.feature_extractor_path)
+            pretrained_dict = torch.load(opt.fe_path)
             load_dict(colorizationnet.fenet, pretrained_dict)
             load_dict(colorizationnet.fenet2, pretrained_dict)
-        print("Generator is loaded [fenet:%s] [fenet2:%s]" % (opt.feature_extractor_path, opt.feature_extractor_path))
+        print("Generator is loaded [fenet:%s] [fenet2:%s]" % (opt.fe_path, opt.fe_path))
     else:
         # Initialize the networks
         pretrained_dict = torch.load(opt.load_path)

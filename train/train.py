@@ -85,7 +85,7 @@ if __name__ == "__main__":
     # ----------------------------------------
     #       Choose pre / continue train
     # ----------------------------------------
-    from .train import trainer
+    from trainer import trainer
 
     if opt.gan_mode == "no":
         trainer.trainer_noGAN(opt)
