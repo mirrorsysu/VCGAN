@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 
-'''
+"""
 import torch.utils.model_zoo as model_zoo
 __all__ = ['ResNet', 'resnet18', 'resnet34', 'resnet50', 'resnet101', 'resnet152']
 model_urls = {
@@ -11,57 +11,63 @@ model_urls = {
     'resnet101': 'https://download.pytorch.org/models/resnet101-5d3b4d8f.pth',
     'resnet152': 'https://download.pytorch.org/models/resnet152-b121ed2d.pth',
 }
-'''
+"""
 
-def weights_init(net, init_type = 'normal', init_var = 0.02):
+
+def weights_init(net, init_type="normal", init_var=0.02):
     """Initialize network weights.
     Parameters:
         net (network)       -- network to be initialized
         init_type (str)     -- the name of an initialization method: normal | xavier | kaiming | orthogonal
         init_var (float)    -- scaling factor for normal, xavier and orthogonal.
     """
+
     def init_func(m):
         classname = m.__class__.__name__
-        if hasattr(m, 'weight') and classname.find('Conv') != -1:
-            if init_type == 'normal':
+        if hasattr(m, "weight") and classname.find("Conv") != -1:
+            if init_type == "normal":
                 init.normal_(m.weight.data, 0.0, init_var)
-            elif init_type == 'xavier':
-                init.xavier_normal_(m.weight.data, gain = init_var)
-            elif init_type == 'kaiming':
-                init.kaiming_normal_(m.weight.data, a = 0, mode = 'fan_in')
-            elif init_type == 'orthogonal':
-                init.orthogonal_(m.weight.data, gain = init_var)
+            elif init_type == "xavier":
+                init.xavier_normal_(m.weight.data, gain=init_var)
+            elif init_type == "kaiming":
+                init.kaiming_normal_(m.weight.data, a=0, mode="fan_in")
+            elif init_type == "orthogonal":
+                init.orthogonal_(m.weight.data, gain=init_var)
             else:
-                raise NotImplementedError('initialization method [%s] is not implemented' % init_type)
-        elif classname.find('BatchNorm2d') != -1:
+                raise NotImplementedError("initialization method [%s] is not implemented" % init_type)
+        elif classname.find("BatchNorm2d") != -1:
             init.normal_(m.weight.data, 1.0, 0.02)
             init.constant_(m.bias.data, 0.0)
-        elif classname.find('Linear') != -1:
+        elif classname.find("Linear") != -1:
             init.normal_(m.weight, 0, 0.01)
             init.constant_(m.bias, 0)
 
     # Apply the initialization function <init_func>
-    print('Initialize network with %s type' % init_type)
+    print("Initialize network with %s type" % init_type)
     net.apply(init_func)
 
-def conv3x3(in_planes, out_planes, stride = 1):
-    """3x3 convolution with padding"""
-    return nn.Conv2d(in_planes, out_planes, kernel_size = 3, stride = stride, padding = 1, bias = False)
 
-def conv1x1(in_planes, out_planes, stride = 1):
+def conv3x3(in_planes, out_planes, stride=1):
+    """3x3 convolution with padding"""
+    return nn.Conv2d(in_planes, out_planes, kernel_size=3, stride=stride, padding=1, bias=False)
+
+
+def conv1x1(in_planes, out_planes, stride=1):
     """1x1 convolution"""
-    return nn.Conv2d(in_planes, out_planes, kernel_size = 1, stride = stride, bias = False)
+    return nn.Conv2d(in_planes, out_planes, kernel_size=1, stride=stride, bias=False)
+
 
 class BasicBlock(nn.Module):
     expansion = 1
-    def __init__(self, inplanes, planes, stride = 1, downsample = None, norm_layer = None):
+
+    def __init__(self, inplanes, planes, stride=1, downsample=None, norm_layer=None):
         super(BasicBlock, self).__init__()
         if norm_layer is None:
             norm_layer = nn.InstanceNorm2d
         # Both self.conv1 and self.downsample layers downsample the input when stride != 1
         self.conv1 = conv3x3(inplanes, planes, stride)
         self.bn1 = norm_layer(planes)
-        self.lrelu = nn.LeakyReLU(0.2, inplace = True)
+        self.lrelu = nn.LeakyReLU(0.2, inplace=True)
         self.conv2 = conv3x3(planes, planes)
         self.bn2 = norm_layer(planes)
         self.downsample = downsample
@@ -80,9 +86,11 @@ class BasicBlock(nn.Module):
         out = self.lrelu(out)
         return out
 
+
 class Bottleneck(nn.Module):
     expansion = 4
-    def __init__(self, inplanes, planes, stride = 1, downsample = None, norm_layer = None):
+
+    def __init__(self, inplanes, planes, stride=1, downsample=None, norm_layer=None):
         super(Bottleneck, self).__init__()
         if norm_layer is None:
             norm_layer = nn.InstanceNorm2d
@@ -93,7 +101,7 @@ class Bottleneck(nn.Module):
         self.bn2 = norm_layer(planes)
         self.conv3 = conv1x1(planes, planes * self.expansion)
         self.bn3 = norm_layer(planes * self.expansion)
-        self.lrelu = nn.LeakyReLU(0.2, inplace = True)
+        self.lrelu = nn.LeakyReLU(0.2, inplace=True)
         self.downsample = downsample
         self.stride = stride
 
@@ -113,39 +121,28 @@ class Bottleneck(nn.Module):
         out = self.lrelu(out)
         return out
 
+
 class ResNet(nn.Module):
-    def __init__(self, block, layers, num_classes = 1000, zero_init_residual = False, norm_layer = None):
+    def __init__(self, block, layers, num_classes=1000, zero_init_residual=False, norm_layer=None):
         super(ResNet, self).__init__()
         if norm_layer is None:
             norm_layer = nn.InstanceNorm2d
         self.inplanes = 64
-        self.begin = nn.Sequential(
-            nn.Conv2d(3, 64, kernel_size = 7, stride = 1, padding = 3, bias = False),
-            nn.LeakyReLU(0.2, inplace = True),
-            nn.Conv2d(64, 64, kernel_size = 4, stride = 2, padding = 1, bias = False),
-            norm_layer(64),
-            nn.LeakyReLU(0.2, inplace = True),
-            nn.Conv2d(64, 64, kernel_size = 4, stride = 2, padding = 1, bias = False),
-            norm_layer(64),
-            nn.LeakyReLU(0.2, inplace = True)
-        )
+        self.begin = nn.Sequential(nn.Conv2d(3, 64, kernel_size=7, stride=1, padding=3, bias=False), nn.LeakyReLU(0.2, inplace=True), nn.Conv2d(64, 64, kernel_size=4, stride=2, padding=1, bias=False), norm_layer(64), nn.LeakyReLU(0.2, inplace=True), nn.Conv2d(64, 64, kernel_size=4, stride=2, padding=1, bias=False), norm_layer(64), nn.LeakyReLU(0.2, inplace=True))
 
-        self.layer1 = self._make_layer(block, 64, layers[0], norm_layer = norm_layer)
-        self.layer2 = self._make_layer(block, 128, layers[1], stride = 2, norm_layer = norm_layer)
-        self.layer3 = self._make_layer(block, 256, layers[2], stride = 2, norm_layer = norm_layer)
-        self.layer4 = self._make_layer(block, 512, layers[3], stride = 2, norm_layer = norm_layer)
+        self.layer1 = self._make_layer(block, 64, layers[0], norm_layer=norm_layer)
+        self.layer2 = self._make_layer(block, 128, layers[1], stride=2, norm_layer=norm_layer)
+        self.layer3 = self._make_layer(block, 256, layers[2], stride=2, norm_layer=norm_layer)
+        self.layer4 = self._make_layer(block, 512, layers[3], stride=2, norm_layer=norm_layer)
 
-        self.last = nn.Sequential(
-            nn.Conv2d(2048, 512, kernel_size = 3, stride = 1, padding = 1, bias = False),
-            nn.LeakyReLU(0.2, inplace = True)
-        )
+        self.last = nn.Sequential(nn.Conv2d(2048, 512, kernel_size=3, stride=1, padding=1, bias=False), nn.LeakyReLU(0.2, inplace=True))
 
         self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
         self.classifier = nn.Linear(512, num_classes)
 
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
-                nn.init.kaiming_normal_(m.weight, mode = 'fan_out', nonlinearity = 'relu')
+                nn.init.kaiming_normal_(m.weight, mode="fan_out", nonlinearity="relu")
             elif isinstance(m, (nn.BatchNorm2d, nn.GroupNorm)):
                 nn.init.constant_(m.weight, 1)
                 nn.init.constant_(m.bias, 0)
@@ -160,7 +157,7 @@ class ResNet(nn.Module):
                 elif isinstance(m, BasicBlock):
                     nn.init.constant_(m.bn2.weight, 0)
 
-    def _make_layer(self, block, planes, blocks, stride = 1, norm_layer = None):
+    def _make_layer(self, block, planes, blocks, stride=1, norm_layer=None):
         if norm_layer is None:
             norm_layer = nn.InstanceNorm2d
         downsample = None
@@ -173,7 +170,7 @@ class ResNet(nn.Module):
         layers.append(block(self.inplanes, planes, stride, downsample, norm_layer))
         self.inplanes = planes * block.expansion
         for _ in range(1, blocks):
-            layers.append(block(self.inplanes, planes, norm_layer = norm_layer))
+            layers.append(block(self.inplanes, planes, norm_layer=norm_layer))
         return nn.Sequential(*layers)
 
     def forward(self, x):
@@ -191,6 +188,7 @@ class ResNet(nn.Module):
         x = self.classifier(x)
 
         return x
+
 
 def resnet18(**kwargs):
     """Constructs a ResNet-18 model.

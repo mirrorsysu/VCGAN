@@ -13,7 +13,7 @@ from networks import pwcnet
 
 
 def create_generator(opt):
-    if opt.stage == 'First':
+    if opt.stage == "First":
         colorizationnet = network.FirstStageNet(opt)
         print("First stage Generator is created!")
     else:

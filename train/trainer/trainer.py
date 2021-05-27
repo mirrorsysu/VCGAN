@@ -12,6 +12,7 @@ import torch.backends.cudnn as cudnn
 from utils import utils
 from utils import dataset
 
+
 def trainer_noGAN(opt):
     # cudnn benchmark
     cudnn.benchmark = opt.cudnn_benchmark
@@ -50,7 +51,7 @@ def trainer_noGAN(opt):
 
     # Save the model if pre_train == True
     def save_model(opt, epoch, generator):
-        if (epoch % opt.save_by_epoch != 0):
+        if epoch % opt.save_by_epoch != 0:
             return
         """Save the model at "checkpoint_interval" and its multiple"""
         model_name = "First_Stage_epoch%d_bs%d.pth" % (epoch, opt.batch_size)
@@ -76,11 +77,13 @@ def trainer_noGAN(opt):
     #                 Training
     # ----------------------------------------
 
+    adjust_learning_rate(opt, opt.begin_epoch, optimizer_G)
+
     # Count start time
     prev_time = time.time()
 
     # For loop training
-    for epoch in range(opt.epochs):
+    for epoch in range(opt.begin_epoch, opt.epochs):
         for i, (true_L, true_RGB) in enumerate(dataloader):
 
             # To device
@@ -111,10 +114,10 @@ def trainer_noGAN(opt):
             prev_time = time.time()
 
             # Print log
-            print("\r[Epoch %d/%d] [Batch %d/%d] [Pixel-level Loss: %.4f] [Perceptual Loss: %.4f] Time_left: %s" % ((epoch + 1), opt.epochs, i, len(dataloader), loss_L1.item(), loss_percep.item(), time_left))
+            print("\r[Epoch %d/%d] [Batch %d/%d] [Pixel-level Loss: %.4f] [Perceptual Loss: %.4f] Time_left: %s" % (epoch, opt.epochs, i, len(dataloader), loss_L1.item(), loss_percep.item(), time_left))
 
             # Save model at certain epochs or iterations
-            save_model(opt, (epoch + 1), generator)
+            save_model(opt, epoch, generator)
 
             # Learning rate decrease at certain epochs
             adjust_learning_rate(opt, (epoch + 1), optimizer_G)

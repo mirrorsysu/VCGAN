@@ -1,11 +1,14 @@
 import argparse
 from pathlib import Path
 
+
 def str2bool(str):
     return True if str.lower() == "true" else False
 
+
 def str2Path(str):
     return Path(str)
+
 
 if __name__ == "__main__":
     # ----------------------------------------
