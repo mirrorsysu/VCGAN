@@ -1,3 +1,7 @@
+models/*
+samples/*
+trained_models/*
+
 # Mac
 *.DS_Store
 *.vscode/

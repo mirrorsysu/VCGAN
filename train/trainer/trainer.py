@@ -51,8 +51,6 @@ def trainer_noGAN(opt):
 
     # Save the model if pre_train == True
     def save_model(opt, epoch, generator):
-        if epoch % opt.save_by_epoch != 0:
-            return
         """Save the model at "checkpoint_interval" and its multiple"""
         model_name = "First_Stage_epoch%d_bs%d.pth" % (epoch, opt.batch_size)
         save_name = os.path.join(opt.save_path, model_name)
@@ -116,16 +114,17 @@ def trainer_noGAN(opt):
             # Print log
             print("\r[Epoch %d/%d] [Batch %d/%d] [Pixel-level Loss: %.4f] [Perceptual Loss: %.4f] Time_left: %s" % (epoch, opt.epochs, i, len(dataloader), loss_L1.item(), loss_percep.item(), time_left))
 
-            # Save model at certain epochs or iterations
-            save_model(opt, epoch, generator)
-
-            # Learning rate decrease at certain epochs
-            adjust_learning_rate(opt, (epoch + 1), optimizer_G)
             """
             img_list = [fake_RGB, true_RGB]
             name_list = ['pred', 'gt']
             utils.save_sample_png(sample_folder = opt.sample_path, sample_name = 'iter%d' % (i + 1), img_list = img_list, name_list = name_list)
             """
+        # Save model at certain epochs or iterations
+        if (epoch % opt.save_by_epoch == 0):
+            save_model(opt, epoch, generator)
+
+        # Learning rate decrease at certain epochs
+        adjust_learning_rate(opt, (epoch + 1), optimizer_G)
         ### Sample data every epoch
         if (epoch + 1) % 1 == 0:
             img_list = [fake_RGB, true_RGB]

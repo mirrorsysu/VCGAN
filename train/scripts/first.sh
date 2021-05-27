@@ -1,11 +1,12 @@
+source activate slowmo
 python train.py \
 --stage 'First' \
 --load_model False \
 --load_path '' \
---load_fe False \
---fe_path '' \
---load_perceptual False \
---perceptual_path '' \
+--load_fe True \
+--fe_path './trained_models/mobilenet_v2-b0353104.pth' \
+--load_perceptual True \
+--perceptual_path 'trained_models/vgg16-397923af.pth' \
 --begin_epoch 0 \
 \
 --save_by_epoch 1 \
@@ -20,7 +21,7 @@ python train.py \
 --video_imagelist_txt './txt/DAVIS_videvo_train_imagelist.txt' \
 \
 --epochs 101 \
---batch_size 8 \
+--batch_size 48 \
 --lr_g 1e-4 \
 --lr_d 1e-4 \
 --b1 0.5 \
@@ -44,8 +45,8 @@ python train.py \
 --norm 'in' \
 --init_type 'xavier' \
 --init_gain 0.02 \
---baseroot '.' \
---sample_size 1 \
+--baseroot '../../DATASETS/ILSVRC-256/' \
+--sample_size 10 \
 --crop_size 256 \
 --crop_size_h 256 \
 --crop_size_w 448 \

@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 
 from .network_module import *
+from .mobilenetV2 import mobilenet_v2_mir
 
 # from network_feature_extractor import *
 
@@ -129,7 +130,16 @@ class ResNet(nn.Module):
         if norm_layer is None:
             norm_layer = nn.InstanceNorm2d
         self.inplanes = 64
-        self.begin = nn.Sequential(nn.Conv2d(3, 64, kernel_size=7, stride=1, padding=3, bias=False), nn.LeakyReLU(0.2, inplace=True), nn.Conv2d(64, 64, kernel_size=4, stride=2, padding=1, bias=False), norm_layer(64), nn.LeakyReLU(0.2, inplace=True), nn.Conv2d(64, 64, kernel_size=4, stride=2, padding=1, bias=False), norm_layer(64), nn.LeakyReLU(0.2, inplace=True))
+        self.begin = nn.Sequential(
+            nn.Conv2d(3, 64, kernel_size=7, stride=1, padding=3, bias=False),
+            nn.LeakyReLU(0.2, inplace=True),
+            nn.Conv2d(64, 64, kernel_size=4, stride=2, padding=1, bias=False),
+            norm_layer(64),
+            nn.LeakyReLU(0.2, inplace=True),
+            nn.Conv2d(64, 64, kernel_size=4, stride=2, padding=1, bias=False),
+            norm_layer(64),
+            nn.LeakyReLU(0.2, inplace=True),
+        )
 
         self.layer1 = self._make_layer(block, 64, layers[0], norm_layer=norm_layer)
         self.layer2 = self._make_layer(block, 128, layers[1], stride=2, norm_layer=norm_layer)
@@ -189,8 +199,9 @@ class FirstStageNet(nn.Module):
     def __init__(self, opt):
         super(FirstStageNet, self).__init__()
         # Global feature extraction part of pre-trained ResNet-50 network
-        self.fenet = ResNet(Bottleneck, [3, 4, 6, 3])
-        self.fenet2 = ResNet(Bottleneck, [3, 4, 6, 3])
+        self.fenet = mobilenet_v2_mir()
+        # self.fenet = ResNet(Bottleneck, [3, 4, 6, 3])
+        # self.fenet2 = ResNet(Bottleneck, [3, 4, 6, 3])
         # 1 * 1 convolution block for making more channels
         self.begin = Conv2dLayer(opt.in_channels, opt.start_channels, 7, 1, 3, pad_type=opt.pad, activation=opt.activ_g, norm="none")
         # Down sampling part of generator
@@ -199,16 +210,26 @@ class FirstStageNet(nn.Module):
         self.down3 = Conv2dLayer(opt.start_channels * 4, opt.start_channels * 8, 4, 2, 1, pad_type=opt.pad, activation=opt.activ_g, norm=opt.norm)
         self.down4 = Conv2dLayer(opt.start_channels * 8, opt.start_channels * 16, 4, 2, 1, pad_type=opt.pad, activation=opt.activ_g, norm=opt.norm)
         self.down5 = Conv2dLayer(opt.start_channels * 16, opt.start_channels * 16, 4, 2, 1, pad_type=opt.pad, activation=opt.activ_g, norm=opt.norm)
-        self.down6 = Conv2dLayer(opt.start_channels * 48, opt.start_channels * 16, 4, 2, 1, pad_type=opt.pad, activation=opt.activ_g, norm=opt.norm)
+        self.down6 = Conv2dLayer(opt.start_channels * 32, opt.start_channels * 16, 4, 2, 1, pad_type=opt.pad, activation=opt.activ_g, norm=opt.norm)
         # Up sampling part of generator
-        self.up1 = TransposeConv2dLayer(opt.start_channels * 16, opt.start_channels * 16, 3, 1, 1, pad_type=opt.pad, activation=opt.activ_g, norm=opt.norm)
+        self.up1 = TransposeConv2dLayer(
+            opt.start_channels * 16, opt.start_channels * 16, 3, 1, 1, pad_type=opt.pad, activation=opt.activ_g, norm=opt.norm
+        )
         self.a1 = Self_Attn_FM(opt.start_channels * 16)
-        self.up2 = TransposeConv2dLayer(opt.start_channels * 32, opt.start_channels * 16, 3, 1, 1, pad_type=opt.pad, activation=opt.activ_g, norm=opt.norm)
+        self.up2 = TransposeConv2dLayer(
+            opt.start_channels * 32, opt.start_channels * 16, 3, 1, 1, pad_type=opt.pad, activation=opt.activ_g, norm=opt.norm
+        )
         self.a2 = Self_Attn_FM(opt.start_channels * 16)
-        self.up3 = TransposeConv2dLayer(opt.start_channels * 32, opt.start_channels * 8, 3, 1, 1, pad_type=opt.pad, activation=opt.activ_g, norm=opt.norm)
+        self.up3 = TransposeConv2dLayer(
+            opt.start_channels * 32, opt.start_channels * 8, 3, 1, 1, pad_type=opt.pad, activation=opt.activ_g, norm=opt.norm
+        )
         self.a3 = Self_Attn_FM(opt.start_channels * 8)
-        self.up4 = TransposeConv2dLayer(opt.start_channels * 16, opt.start_channels * 4, 3, 1, 1, pad_type=opt.pad, activation=opt.activ_g, norm=opt.norm)
-        self.up5 = TransposeConv2dLayer(opt.start_channels * 8, opt.start_channels * 2, 3, 1, 1, pad_type=opt.pad, activation=opt.activ_g, norm=opt.norm)
+        self.up4 = TransposeConv2dLayer(
+            opt.start_channels * 16, opt.start_channels * 4, 3, 1, 1, pad_type=opt.pad, activation=opt.activ_g, norm=opt.norm
+        )
+        self.up5 = TransposeConv2dLayer(
+            opt.start_channels * 8, opt.start_channels * 2, 3, 1, 1, pad_type=opt.pad, activation=opt.activ_g, norm=opt.norm
+        )
         self.up6 = TransposeConv2dLayer(opt.start_channels * 4, opt.start_channels, 3, 1, 1, pad_type=opt.pad, activation=opt.activ_g, norm=opt.norm)
         # Output convolution block for Main Colorization Network
         self.final = Conv2dLayer(opt.start_channels * 2, opt.out_channels, 7, 1, 3, pad_type=opt.pad, activation="tanh", norm="none")
@@ -224,10 +245,10 @@ class FirstStageNet(nn.Module):
         d3 = self.down3(d2)  # out: batch * 256 * 32 * 32
         d4 = self.down4(d3)  # out: batch * 512 * 16 * 16
         d5 = self.down5(d4)  # out: batch * 512 * 8 * 8
-
         global_features = self.fenet(x)  # out: batch * 512 * 8 * 8
-        global_features2 = self.fenet2(x)  # out: batch * 512 * 8 * 8
-        d5_ = torch.cat((d5, global_features, global_features2), 1)  # out: batch * (1536 = 512 + 512) * 8 * 8
+        # global_features2 = self.fenet2(x)  # out: batch * 512 * 8 * 8
+        
+        d5_ = torch.cat((d5, global_features), 1)  # out: batch * (1536 = 512 + 512) * 8 * 8
 
         d6 = self.down6(d5_)  # out: batch * 512 * 4 * 4
         # Decoder
@@ -269,14 +290,24 @@ class SecondStageNet(nn.Module):
         self.down5 = Conv2dLayer(opt.start_channels * 16, opt.start_channels * 16, 4, 2, 1, pad_type=opt.pad, activation=opt.activ_g, norm=opt.norm)
         self.down6 = Conv2dLayer(opt.start_channels * 48, opt.start_channels * 16, 4, 2, 1, pad_type=opt.pad, activation=opt.activ_g, norm=opt.norm)
         # Up sampling part of generator
-        self.up1 = TransposeConv2dLayer(opt.start_channels * 16, opt.start_channels * 16, 3, 1, 1, pad_type=opt.pad, activation=opt.activ_g, norm=opt.norm)
+        self.up1 = TransposeConv2dLayer(
+            opt.start_channels * 16, opt.start_channels * 16, 3, 1, 1, pad_type=opt.pad, activation=opt.activ_g, norm=opt.norm
+        )
         self.a1 = Self_Attn_FM(opt.start_channels * 16)
-        self.up2 = TransposeConv2dLayer(opt.start_channels * 32, opt.start_channels * 16, 3, 1, 1, pad_type=opt.pad, activation=opt.activ_g, norm=opt.norm)
+        self.up2 = TransposeConv2dLayer(
+            opt.start_channels * 32, opt.start_channels * 16, 3, 1, 1, pad_type=opt.pad, activation=opt.activ_g, norm=opt.norm
+        )
         self.a2 = Self_Attn_FM(opt.start_channels * 16)
-        self.up3 = TransposeConv2dLayer(opt.start_channels * 32, opt.start_channels * 8, 3, 1, 1, pad_type=opt.pad, activation=opt.activ_g, norm=opt.norm)
+        self.up3 = TransposeConv2dLayer(
+            opt.start_channels * 32, opt.start_channels * 8, 3, 1, 1, pad_type=opt.pad, activation=opt.activ_g, norm=opt.norm
+        )
         self.a3 = Self_Attn_FM(opt.start_channels * 8)
-        self.up4 = TransposeConv2dLayer(opt.start_channels * 16, opt.start_channels * 4, 3, 1, 1, pad_type=opt.pad, activation=opt.activ_g, norm=opt.norm)
-        self.up5 = TransposeConv2dLayer(opt.start_channels * 8, opt.start_channels * 2, 3, 1, 1, pad_type=opt.pad, activation=opt.activ_g, norm=opt.norm)
+        self.up4 = TransposeConv2dLayer(
+            opt.start_channels * 16, opt.start_channels * 4, 3, 1, 1, pad_type=opt.pad, activation=opt.activ_g, norm=opt.norm
+        )
+        self.up5 = TransposeConv2dLayer(
+            opt.start_channels * 8, opt.start_channels * 2, 3, 1, 1, pad_type=opt.pad, activation=opt.activ_g, norm=opt.norm
+        )
         self.up6 = TransposeConv2dLayer(opt.start_channels * 4, opt.start_channels, 3, 1, 1, pad_type=opt.pad, activation=opt.activ_g, norm=opt.norm)
         # Output convolution block for Main Colorization Network
         self.final = Conv2dLayer(opt.start_channels * 2, opt.out_channels, 7, 1, 3, pad_type=opt.pad, activation="tanh", norm="none")
@@ -450,13 +481,23 @@ class PatchDiscriminator70(nn.Module):
     def __init__(self, opt):
         super(PatchDiscriminator70, self).__init__()
         # Down sampling
-        self.block1 = Conv2dLayer(opt.in_channels + opt.out_channels, opt.start_channels * 2, 7, 1, 3, pad_type=opt.pad, activation=opt.activ_g, norm="none", sn=True)
-        self.block2 = Conv2dLayer(opt.start_channels * 2, opt.start_channels * 4, 4, 2, 1, pad_type=opt.pad, activation=opt.activ_d, norm=opt.norm, sn=True)
-        self.block3 = Conv2dLayer(opt.start_channels * 4, opt.start_channels * 8, 4, 2, 1, pad_type=opt.pad, activation=opt.activ_d, norm=opt.norm, sn=True)
-        self.block4 = Conv2dLayer(opt.start_channels * 8, opt.start_channels * 16, 4, 2, 1, pad_type=opt.pad, activation=opt.activ_d, norm=opt.norm, sn=True)
+        self.block1 = Conv2dLayer(
+            opt.in_channels + opt.out_channels, opt.start_channels * 2, 7, 1, 3, pad_type=opt.pad, activation=opt.activ_g, norm="none", sn=True
+        )
+        self.block2 = Conv2dLayer(
+            opt.start_channels * 2, opt.start_channels * 4, 4, 2, 1, pad_type=opt.pad, activation=opt.activ_d, norm=opt.norm, sn=True
+        )
+        self.block3 = Conv2dLayer(
+            opt.start_channels * 4, opt.start_channels * 8, 4, 2, 1, pad_type=opt.pad, activation=opt.activ_d, norm=opt.norm, sn=True
+        )
+        self.block4 = Conv2dLayer(
+            opt.start_channels * 8, opt.start_channels * 16, 4, 2, 1, pad_type=opt.pad, activation=opt.activ_d, norm=opt.norm, sn=True
+        )
         self.a1 = Self_Attn_FM(opt.start_channels * 16)
         # Final output, implemention of 70 * 70 PatchGAN
-        self.final1 = Conv2dLayer(opt.start_channels * 16, opt.start_channels * 8, 4, 1, 1, pad_type=opt.pad, activation=opt.activ_d, norm=opt.norm, sn=True)
+        self.final1 = Conv2dLayer(
+            opt.start_channels * 16, opt.start_channels * 8, 4, 1, 1, pad_type=opt.pad, activation=opt.activ_d, norm=opt.norm, sn=True
+        )
         self.final2 = Conv2dLayer(opt.start_channels * 8, 1, 4, 1, 1, pad_type=opt.pad, activation="none", norm="none", sn=True)
 
     def forward(self, img_A, img_B):
@@ -481,7 +522,30 @@ class PatchDiscriminator70(nn.Module):
 class PerceptualNet(nn.Module):
     def __init__(self):
         super(PerceptualNet, self).__init__()
-        self.features = nn.Sequential(nn.Conv2d(3, 64, 3, 1, 1), nn.ReLU(inplace=True), nn.Conv2d(64, 64, 3, 1, 1), nn.ReLU(inplace=True), nn.MaxPool2d(2, 2), nn.Conv2d(64, 128, 3, 1, 1), nn.ReLU(inplace=True), nn.Conv2d(128, 128, 3, 1, 1), nn.ReLU(inplace=True), nn.MaxPool2d(2, 2), nn.Conv2d(128, 256, 3, 1, 1), nn.ReLU(inplace=True), nn.Conv2d(256, 256, 3, 1, 1), nn.ReLU(inplace=True), nn.Conv2d(256, 256, 3, 1, 1), nn.MaxPool2d(2, 2), nn.Conv2d(256, 512, 3, 1, 1), nn.ReLU(inplace=True), nn.Conv2d(512, 512, 3, 1, 1), nn.ReLU(inplace=True), nn.Conv2d(512, 512, 3, 1, 1))
+        self.features = nn.Sequential(
+            nn.Conv2d(3, 64, 3, 1, 1),
+            nn.ReLU(inplace=True),
+            nn.Conv2d(64, 64, 3, 1, 1),
+            nn.ReLU(inplace=True),
+            nn.MaxPool2d(2, 2),
+            nn.Conv2d(64, 128, 3, 1, 1),
+            nn.ReLU(inplace=True),
+            nn.Conv2d(128, 128, 3, 1, 1),
+            nn.ReLU(inplace=True),
+            nn.MaxPool2d(2, 2),
+            nn.Conv2d(128, 256, 3, 1, 1),
+            nn.ReLU(inplace=True),
+            nn.Conv2d(256, 256, 3, 1, 1),
+            nn.ReLU(inplace=True),
+            nn.Conv2d(256, 256, 3, 1, 1),
+            nn.ReLU(inplace=True),
+            nn.MaxPool2d(2, 2),
+            nn.Conv2d(256, 512, 3, 1, 1),
+            nn.ReLU(inplace=True),
+            nn.Conv2d(512, 512, 3, 1, 1),
+            nn.ReLU(inplace=True),
+            nn.Conv2d(512, 512, 3, 1, 1),
+        )
 
     def forward(self, x):
         x = self.features(x)
