@@ -1,18 +1,24 @@
 python train.py \
---pre_train True \
---save_mode 'epoch' \
+--stage 'First' \
+--load_model False\
+--load_path '' \
+--load_fe False \
+--fe_path '' \
+--load_perceptual False \
+--perceptual_path '' \
+--begin_epoch 0 \
+
 --save_by_epoch 1 \
---save_by_iter 10000 \
 --save_path './models' \
 --sample_path './samples' \
---load_name './trained_models/First_Stage_final.pth' \
---feature_extractor_path './trained_models/resnet50_fc_in_epoch150_bs256.pth' \
---pwcnet_path './trained_models/pwcNet-default.pytorch' \
---perceptual_path './trained_models/vgg16_pretrained.pth' \
---video_class_txt './txt/DAVIS_videvo_train_class.txt' \
---video_imagelist_txt './txt/DAVIS_videvo_train_imagelist.txt' \
+
 --multi_gpu True \
 --cudnn_benchmark True \
+
+--pwcnet_path './trained_models/pwcNet-default.pytorch' \
+--video_class_txt './txt/DAVIS_videvo_train_class.txt' \
+--video_imagelist_txt './txt/DAVIS_videvo_train_imagelist.txt' \
+
 --epochs 101 \
 --batch_size 16 \
 --lr_g 1e-4 \
@@ -20,9 +26,7 @@ python train.py \
 --b1 0.5 \
 --b2 0.999 \
 --weight_decay 0 \
---lr_decrease_mode 'epoch' \
 --lr_decrease_epoch 10 \
---lr_decrease_iter 100000 \
 --lr_decrease_factor 0.5 \
 --num_workers 8 \
 --gan_mode 'no' \

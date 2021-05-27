@@ -49,7 +49,7 @@ def trainer_noGAN(opt):
             param_group["lr"] = lr
 
     # Save the model if pre_train == True
-    def save_model(opt, epoch, len_dataset, generator):
+    def save_model(opt, epoch, generator):
         if (epoch % opt.save_by_epoch != 0):
             return
         """Save the model at "checkpoint_interval" and its multiple"""
@@ -114,10 +114,10 @@ def trainer_noGAN(opt):
             print("\r[Epoch %d/%d] [Batch %d/%d] [Pixel-level Loss: %.4f] [Perceptual Loss: %.4f] Time_left: %s" % ((epoch + 1), opt.epochs, i, len(dataloader), loss_L1.item(), loss_percep.item(), time_left))
 
             # Save model at certain epochs or iterations
-            save_model(opt, (epoch + 1), (iters_done + 1), len(dataloader), generator)
+            save_model(opt, (epoch + 1), generator)
 
             # Learning rate decrease at certain epochs
-            adjust_learning_rate(opt, (epoch + 1), (iters_done + 1), optimizer_G)
+            adjust_learning_rate(opt, (epoch + 1), optimizer_G)
             """
             img_list = [fake_RGB, true_RGB]
             name_list = ['pred', 'gt']
