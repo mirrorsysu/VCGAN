@@ -1,8 +1,9 @@
-
 from torch import nn
 from torch import Tensor
 from typing import Callable, Any, Optional, List
 from torchvision import models
+
+
 def _make_divisible(v: float, divisor: int, min_value: Optional[int] = None) -> int:
     """
     This function is taken from the original tf repo.
@@ -37,10 +38,9 @@ class ConvBNActivation(nn.Sequential):
         if activation_layer is None:
             activation_layer = nn.ReLU6
         super(ConvBNReLU, self).__init__(
-            nn.Conv2d(in_planes, out_planes, kernel_size, stride, padding, dilation=dilation, groups=groups,
-                      bias=False),
+            nn.Conv2d(in_planes, out_planes, kernel_size, stride, padding, dilation=dilation, groups=groups, bias=False),
             norm_layer(out_planes),
-            activation_layer(inplace=True)
+            activation_layer(inplace=True),
         )
         self.out_channels = out_planes
 
@@ -50,14 +50,7 @@ ConvBNReLU = ConvBNActivation
 
 
 class InvertedResidual(nn.Module):
-    def __init__(
-        self,
-        inp: int,
-        oup: int,
-        stride: int,
-        expand_ratio: int,
-        norm_layer: Optional[Callable[..., nn.Module]] = None
-    ) -> None:
+    def __init__(self, inp: int, oup: int, stride: int, expand_ratio: int, norm_layer: Optional[Callable[..., nn.Module]] = None) -> None:
         super(InvertedResidual, self).__init__()
         self.stride = stride
         assert stride in [1, 2]
@@ -72,13 +65,15 @@ class InvertedResidual(nn.Module):
         if expand_ratio != 1:
             # pw
             layers.append(ConvBNReLU(inp, hidden_dim, kernel_size=1, norm_layer=norm_layer))
-        layers.extend([
-            # dw
-            ConvBNReLU(hidden_dim, hidden_dim, stride=stride, groups=hidden_dim, norm_layer=norm_layer),
-            # pw-linear
-            nn.Conv2d(hidden_dim, oup, 1, 1, 0, bias=False),
-            norm_layer(oup),
-        ])
+        layers.extend(
+            [
+                # dw
+                ConvBNReLU(hidden_dim, hidden_dim, stride=stride, groups=hidden_dim, norm_layer=norm_layer),
+                # pw-linear
+                nn.Conv2d(hidden_dim, oup, 1, 1, 0, bias=False),
+                norm_layer(oup),
+            ]
+        )
         self.conv = nn.Sequential(*layers)
         self.out_channels = oup
         self._is_cn = stride > 1
@@ -98,7 +93,7 @@ class MobileNetV2(nn.Module):
         inverted_residual_setting: Optional[List[List[int]]] = None,
         round_nearest: int = 8,
         block: Optional[Callable[..., nn.Module]] = None,
-        norm_layer: Optional[Callable[..., nn.Module]] = None
+        norm_layer: Optional[Callable[..., nn.Module]] = None,
     ) -> None:
         """
         MobileNet V2 main class
@@ -138,8 +133,7 @@ class MobileNetV2(nn.Module):
 
         # only check the first element, assuming user knows t,c,n,s are required
         if len(inverted_residual_setting) == 0 or len(inverted_residual_setting[0]) != 4:
-            raise ValueError("inverted_residual_setting should be non-empty "
-                             "or a 4-element list, got {}".format(inverted_residual_setting))
+            raise ValueError("inverted_residual_setting should be non-empty " "or a 4-element list, got {}".format(inverted_residual_setting))
 
         # building first layer
         input_channel = _make_divisible(input_channel * width_mult, round_nearest)
@@ -168,7 +162,7 @@ class MobileNetV2(nn.Module):
         # weight initialization
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
-                nn.init.kaiming_normal_(m.weight, mode='fan_out')
+                nn.init.kaiming_normal_(m.weight, mode="fan_out")
                 if m.bias is not None:
                     nn.init.zeros_(m.bias)
             elif isinstance(m, (nn.BatchNorm2d, nn.GroupNorm)):

@@ -245,9 +245,15 @@ class FirstStageNet(nn.Module):
         d3 = self.down3(d2)  # out: batch * 256 * 32 * 32
         d4 = self.down4(d3)  # out: batch * 512 * 16 * 16
         d5 = self.down5(d4)  # out: batch * 512 * 8 * 8
+<<<<<<< HEAD
         global_features = self.fenet(x)                         # out: batch * 512 * 8 * 8
         # global_features2 = self.fenet2(x)                       # out: batch * 512 * 8 * 8
         d5_ = torch.cat((d5, global_features), 1)               # out: batch * (1536 = 512 + 512) * 8 * 8
+=======
+        global_features = self.fenet(x)  # out: batch * 512 * 8 * 8
+        global_features2 = self.fenet2(x)  # out: batch * 512 * 8 * 8
+        d5_ = torch.cat((d5, global_features, global_features2), 1)  # out: batch * (1536 = 512 + 512) * 8 * 8
+>>>>>>> master
 
         d6 = self.down6(d5_)  # out: batch * 512 * 4 * 4
         # Decoder

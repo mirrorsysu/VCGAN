@@ -51,7 +51,12 @@ if __name__ == "__main__":
     # ----------------------------------------
     parser = argparse.ArgumentParser()
     # testing parameters
-    parser.add_argument("--imgpath", type=str, default="C:\\Users\\yzzha\\Desktop\\dataset\\ILSVRC2012_val_256\\ILSVRC2012_val_00000016.JPEG", help="testing image path")
+    parser.add_argument(
+        "--imgpath",
+        type=str,
+        default="C:\\Users\\yzzha\\Desktop\\dataset\\ILSVRC2012_val_256\\ILSVRC2012_val_00000016.JPEG",
+        help="testing image path",
+    )
     parser.add_argument("--load_name", type=str, default="./First_Stage_epoch3_bs8.pth", help="load the pre-trained model with certain epoch")
     parser.add_argument("--crop_size", type=int, default=256, help="single patch size")
     parser.add_argument("--comparison", type=bool, default=True, help="compare with original RGB image or not")

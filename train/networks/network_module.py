@@ -8,7 +8,9 @@ from torch.nn import Parameter
 #               Conv2d Block
 # ----------------------------------------
 class Conv2dLayer(nn.Module):
-    def __init__(self, in_channels, out_channels, kernel_size, stride=1, padding=0, dilation=1, pad_type="zero", activation="lrelu", norm="none", sn=True):
+    def __init__(
+        self, in_channels, out_channels, kernel_size, stride=1, padding=0, dilation=1, pad_type="zero", activation="lrelu", norm="none", sn=True
+    ):
         super(Conv2dLayer, self).__init__()
         # Initialize the padding scheme
         if pad_type == "reflect":
@@ -67,7 +69,20 @@ class Conv2dLayer(nn.Module):
 
 
 class TransposeConv2dLayer(nn.Module):
-    def __init__(self, in_channels, out_channels, kernel_size, stride=1, padding=0, dilation=1, pad_type="zero", activation="lrelu", norm="none", sn=True, scale_factor=2):
+    def __init__(
+        self,
+        in_channels,
+        out_channels,
+        kernel_size,
+        stride=1,
+        padding=0,
+        dilation=1,
+        pad_type="zero",
+        activation="lrelu",
+        norm="none",
+        sn=True,
+        scale_factor=2,
+    ):
         super(TransposeConv2dLayer, self).__init__()
         # Initialize the conv scheme
         self.scale_factor = scale_factor
@@ -83,10 +98,26 @@ class TransposeConv2dLayer(nn.Module):
 #            Dense-Res Block
 # ----------------------------------------
 class ResConv2dLayer(nn.Module):
-    def __init__(self, in_channels, latent_channels, kernel_size=3, stride=1, padding=1, dilation=1, pad_type="zero", activation="lrelu", norm="none", sn=False, scale_factor=2):
+    def __init__(
+        self,
+        in_channels,
+        latent_channels,
+        kernel_size=3,
+        stride=1,
+        padding=1,
+        dilation=1,
+        pad_type="zero",
+        activation="lrelu",
+        norm="none",
+        sn=False,
+        scale_factor=2,
+    ):
         super(ResConv2dLayer, self).__init__()
         # Initialize the conv scheme
-        self.conv2d = nn.Sequential(Conv2dLayer(in_channels, latent_channels, kernel_size, stride, padding, dilation, pad_type, activation, norm, sn), Conv2dLayer(latent_channels, in_channels, kernel_size, stride, padding, dilation, pad_type, activation="none", norm=norm, sn=sn))
+        self.conv2d = nn.Sequential(
+            Conv2dLayer(in_channels, latent_channels, kernel_size, stride, padding, dilation, pad_type, activation, norm, sn),
+            Conv2dLayer(latent_channels, in_channels, kernel_size, stride, padding, dilation, pad_type, activation="none", norm=norm, sn=sn),
+        )
 
     def forward(self, x):
         residual = x
@@ -96,14 +127,24 @@ class ResConv2dLayer(nn.Module):
 
 
 class DenseConv2dLayer_5C(nn.Module):
-    def __init__(self, in_channels, latent_channels, kernel_size=3, stride=1, padding=1, dilation=1, pad_type="zero", activation="lrelu", norm="none", sn=False):
+    def __init__(
+        self, in_channels, latent_channels, kernel_size=3, stride=1, padding=1, dilation=1, pad_type="zero", activation="lrelu", norm="none", sn=False
+    ):
         super(DenseConv2dLayer_5C, self).__init__()
         # dense convolutions
         self.conv1 = Conv2dLayer(in_channels, latent_channels, kernel_size, stride, padding, dilation, pad_type, activation, norm, sn)
-        self.conv2 = Conv2dLayer(in_channels + latent_channels, latent_channels, kernel_size, stride, padding, dilation, pad_type, activation, norm, sn)
-        self.conv3 = Conv2dLayer(in_channels + latent_channels * 2, latent_channels, kernel_size, stride, padding, dilation, pad_type, activation, norm, sn)
-        self.conv4 = Conv2dLayer(in_channels + latent_channels * 3, latent_channels, kernel_size, stride, padding, dilation, pad_type, activation, norm, sn)
-        self.conv5 = Conv2dLayer(in_channels + latent_channels * 4, in_channels, kernel_size, stride, padding, dilation, pad_type, activation, norm, sn)
+        self.conv2 = Conv2dLayer(
+            in_channels + latent_channels, latent_channels, kernel_size, stride, padding, dilation, pad_type, activation, norm, sn
+        )
+        self.conv3 = Conv2dLayer(
+            in_channels + latent_channels * 2, latent_channels, kernel_size, stride, padding, dilation, pad_type, activation, norm, sn
+        )
+        self.conv4 = Conv2dLayer(
+            in_channels + latent_channels * 3, latent_channels, kernel_size, stride, padding, dilation, pad_type, activation, norm, sn
+        )
+        self.conv5 = Conv2dLayer(
+            in_channels + latent_channels * 4, in_channels, kernel_size, stride, padding, dilation, pad_type, activation, norm, sn
+        )
 
     def forward(self, x):
         x1 = self.conv1(x)
@@ -115,14 +156,24 @@ class DenseConv2dLayer_5C(nn.Module):
 
 
 class ResidualDenseBlock_5C(nn.Module):
-    def __init__(self, in_channels, latent_channels, kernel_size=3, stride=1, padding=1, dilation=1, pad_type="zero", activation="lrelu", norm="none", sn=False):
+    def __init__(
+        self, in_channels, latent_channels, kernel_size=3, stride=1, padding=1, dilation=1, pad_type="zero", activation="lrelu", norm="none", sn=False
+    ):
         super(ResidualDenseBlock_5C, self).__init__()
         # dense convolutions
         self.conv1 = Conv2dLayer(in_channels, latent_channels, kernel_size, stride, padding, dilation, pad_type, activation, norm, sn)
-        self.conv2 = Conv2dLayer(in_channels + latent_channels, latent_channels, kernel_size, stride, padding, dilation, pad_type, activation, norm, sn)
-        self.conv3 = Conv2dLayer(in_channels + latent_channels * 2, latent_channels, kernel_size, stride, padding, dilation, pad_type, activation, norm, sn)
-        self.conv4 = Conv2dLayer(in_channels + latent_channels * 3, latent_channels, kernel_size, stride, padding, dilation, pad_type, activation, norm, sn)
-        self.conv5 = Conv2dLayer(in_channels + latent_channels * 4, in_channels, kernel_size, stride, padding, dilation, pad_type, activation, norm, sn)
+        self.conv2 = Conv2dLayer(
+            in_channels + latent_channels, latent_channels, kernel_size, stride, padding, dilation, pad_type, activation, norm, sn
+        )
+        self.conv3 = Conv2dLayer(
+            in_channels + latent_channels * 2, latent_channels, kernel_size, stride, padding, dilation, pad_type, activation, norm, sn
+        )
+        self.conv4 = Conv2dLayer(
+            in_channels + latent_channels * 3, latent_channels, kernel_size, stride, padding, dilation, pad_type, activation, norm, sn
+        )
+        self.conv5 = Conv2dLayer(
+            in_channels + latent_channels * 4, in_channels, kernel_size, stride, padding, dilation, pad_type, activation, norm, sn
+        )
 
     def forward(self, x):
         residual = x
@@ -136,12 +187,18 @@ class ResidualDenseBlock_5C(nn.Module):
 
 
 class ResidualDenseBlock_3C(nn.Module):
-    def __init__(self, in_channels, latent_channels, kernel_size=3, stride=1, padding=1, dilation=1, pad_type="zero", activation="lrelu", norm="none", sn=False):
+    def __init__(
+        self, in_channels, latent_channels, kernel_size=3, stride=1, padding=1, dilation=1, pad_type="zero", activation="lrelu", norm="none", sn=False
+    ):
         super(ResidualDenseBlock_3C, self).__init__()
         # dense convolutions
         self.conv1 = Conv2dLayer(in_channels, latent_channels, kernel_size, stride, padding, dilation, pad_type, activation, norm, sn)
-        self.conv2 = Conv2dLayer(in_channels + latent_channels, latent_channels, kernel_size, stride, padding, dilation, pad_type, activation, norm, sn)
-        self.conv3 = Conv2dLayer(in_channels + latent_channels * 2, in_channels, kernel_size, stride, padding, dilation, pad_type, activation, norm, sn)
+        self.conv2 = Conv2dLayer(
+            in_channels + latent_channels, latent_channels, kernel_size, stride, padding, dilation, pad_type, activation, norm, sn
+        )
+        self.conv3 = Conv2dLayer(
+            in_channels + latent_channels * 2, in_channels, kernel_size, stride, padding, dilation, pad_type, activation, norm, sn
+        )
 
     def forward(self, x):
         residual = x
@@ -156,10 +213,19 @@ class ResidualDenseBlock_3C(nn.Module):
 #              Global Block
 # ----------------------------------------
 class FullAttnConv2d(nn.Module):
-    def __init__(self, channel, reduction=8, kernel_size=3, stride=1, padding=0, dilation=1, pad_type="reflect", activation="lrelu", norm="none", sn=False):
+    def __init__(
+        self, channel, reduction=8, kernel_size=3, stride=1, padding=0, dilation=1, pad_type="reflect", activation="lrelu", norm="none", sn=False
+    ):
         super(FullAttnConv2d, self).__init__()
         self.avg_pool = nn.AdaptiveAvgPool2d(1)
-        self.fc = nn.Sequential(nn.Linear(channel, channel // reduction, bias=False), nn.ReLU(inplace=True), nn.Linear(channel // reduction, channel // reduction, bias=False), nn.ReLU(inplace=True), nn.Linear(channel // reduction, channel, bias=False), nn.Sigmoid())
+        self.fc = nn.Sequential(
+            nn.Linear(channel, channel // reduction, bias=False),
+            nn.ReLU(inplace=True),
+            nn.Linear(channel // reduction, channel // reduction, bias=False),
+            nn.ReLU(inplace=True),
+            nn.Linear(channel // reduction, channel, bias=False),
+            nn.Sigmoid(),
+        )
         self.conv = Conv2dLayer(channel, channel, kernel_size, stride, padding, dilation, pad_type, activation, norm, sn)
 
     def forward(self, x):
@@ -172,12 +238,49 @@ class FullAttnConv2d(nn.Module):
 
 
 class LocalEnhanceConv2d(nn.Module):
-    def __init__(self, channel, reduction=8, kernel_size=3, stride=1, padding=0, dilation=1, pad_type="reflect", activation="lrelu", norm="none", sn=False):
+    def __init__(
+        self, channel, reduction=8, kernel_size=3, stride=1, padding=0, dilation=1, pad_type="reflect", activation="lrelu", norm="none", sn=False
+    ):
         super(LocalEnhanceConv2d, self).__init__()
-        self.conv1_1 = Conv2dLayer(channel, channel // reduction, kernel_size=3, stride=1, padding=1, dilation=1, pad_type=pad_type, activation=activation, norm=norm, sn=sn)
-        self.conv1_2 = Conv2dLayer(channel, channel // reduction, kernel_size=kernel_size, stride=stride, padding=padding, dilation=1, pad_type=pad_type, activation=activation, norm=norm, sn=sn)
-        self.conv2_1 = Conv2dLayer(channel // reduction * 2, channel // reduction, kernel_size=3, stride=1, padding=1, dilation=1, pad_type=pad_type, activation=activation, norm=norm, sn=sn)
-        self.conv2_2 = Conv2dLayer(channel // reduction * 2, channel // reduction, kernel_size=kernel_size, stride=stride, padding=padding, dilation=1, pad_type=pad_type, activation=activation, norm=norm, sn=sn)
+        self.conv1_1 = Conv2dLayer(
+            channel, channel // reduction, kernel_size=3, stride=1, padding=1, dilation=1, pad_type=pad_type, activation=activation, norm=norm, sn=sn
+        )
+        self.conv1_2 = Conv2dLayer(
+            channel,
+            channel // reduction,
+            kernel_size=kernel_size,
+            stride=stride,
+            padding=padding,
+            dilation=1,
+            pad_type=pad_type,
+            activation=activation,
+            norm=norm,
+            sn=sn,
+        )
+        self.conv2_1 = Conv2dLayer(
+            channel // reduction * 2,
+            channel // reduction,
+            kernel_size=3,
+            stride=1,
+            padding=1,
+            dilation=1,
+            pad_type=pad_type,
+            activation=activation,
+            norm=norm,
+            sn=sn,
+        )
+        self.conv2_2 = Conv2dLayer(
+            channel // reduction * 2,
+            channel // reduction,
+            kernel_size=kernel_size,
+            stride=stride,
+            padding=padding,
+            dilation=1,
+            pad_type=pad_type,
+            activation=activation,
+            norm=norm,
+            sn=sn,
+        )
         self.conv = Conv2dLayer(channel // reduction * 2, channel, kernel_size, stride, padding, dilation, pad_type, activation, norm, sn)
 
     def forward(self, x):
@@ -192,7 +295,20 @@ class LocalEnhanceConv2d(nn.Module):
 
 
 class GlobalBlock(nn.Module):
-    def __init__(self, in_channels, latent_channels, reduction=8, kernel_size=3, stride=1, padding=1, dilation=1, pad_type="zero", activation="lrelu", norm="none", sn=False):
+    def __init__(
+        self,
+        in_channels,
+        latent_channels,
+        reduction=8,
+        kernel_size=3,
+        stride=1,
+        padding=1,
+        dilation=1,
+        pad_type="zero",
+        activation="lrelu",
+        norm="none",
+        sn=False,
+    ):
         super(GlobalBlock, self).__init__()
         self.in_conv = Conv2dLayer(in_channels, latent_channels, kernel_size, stride, padding, dilation, pad_type, activation, norm, sn)
         self.full_conv = FullAttnConv2d(latent_channels, reduction, kernel_size, stride, padding, dilation, pad_type, activation, norm, sn)
@@ -218,11 +334,58 @@ class GlobalBlock(nn.Module):
 # ----------------------------------------
 # Fusion of GlobalBlock and ResidualDenseBlock_3C
 class FusionGBwithRDB(nn.Module):
-    def __init__(self, in_channels, latent_channels, reduction=1, kernel_size=3, stride=1, padding=1, dilation=1, pad_type="zero", activation="lrelu", norm="none", sn=False):
+    def __init__(
+        self,
+        in_channels,
+        latent_channels,
+        reduction=1,
+        kernel_size=3,
+        stride=1,
+        padding=1,
+        dilation=1,
+        pad_type="zero",
+        activation="lrelu",
+        norm="none",
+        sn=False,
+    ):
         super(FusionGBwithRDB, self).__init__()
-        self.conv1 = ResidualDenseBlock_3C(in_channels=in_channels, latent_channels=latent_channels, kernel_size=kernel_size, stride=stride, padding=padding, dilation=dilation, pad_type=pad_type, activation=activation, norm=norm, sn=sn)
-        self.conv2 = ResidualDenseBlock_3C(in_channels=in_channels, latent_channels=latent_channels, kernel_size=kernel_size, stride=stride, padding=padding, dilation=dilation, pad_type=pad_type, activation=activation, norm=norm, sn=sn)
-        self.conv3 = GlobalBlock(in_channels=in_channels, latent_channels=latent_channels, reduction=reduction, kernel_size=kernel_size, stride=stride, padding=padding, dilation=dilation, pad_type=pad_type, activation=activation, norm=norm, sn=sn)
+        self.conv1 = ResidualDenseBlock_3C(
+            in_channels=in_channels,
+            latent_channels=latent_channels,
+            kernel_size=kernel_size,
+            stride=stride,
+            padding=padding,
+            dilation=dilation,
+            pad_type=pad_type,
+            activation=activation,
+            norm=norm,
+            sn=sn,
+        )
+        self.conv2 = ResidualDenseBlock_3C(
+            in_channels=in_channels,
+            latent_channels=latent_channels,
+            kernel_size=kernel_size,
+            stride=stride,
+            padding=padding,
+            dilation=dilation,
+            pad_type=pad_type,
+            activation=activation,
+            norm=norm,
+            sn=sn,
+        )
+        self.conv3 = GlobalBlock(
+            in_channels=in_channels,
+            latent_channels=latent_channels,
+            reduction=reduction,
+            kernel_size=kernel_size,
+            stride=stride,
+            padding=padding,
+            dilation=dilation,
+            pad_type=pad_type,
+            activation=activation,
+            norm=norm,
+            sn=sn,
+        )
         # self.conv4 = ResidualDenseBlock_3C(in_channels = in_channels, latent_channels = latent_channels, kernel_size = kernel_size, stride = stride, padding = padding, dilation = dilation, pad_type = pad_type, activation = activation, norm = norm, sn = sn)
         # self.conv5 = GlobalBlock(in_channels = in_channels, latent_channels = latent_channels, reduction = reduction, kernel_size = kernel_size, stride = stride, padding = padding, dilation = dilation, pad_type = pad_type, activation = activation, norm = norm, sn = sn)
 
@@ -466,7 +629,9 @@ class Self_Attn_C(nn.Module):
 #                Gated ConvBlock
 # -----------------------------------------------
 class GatedConv2d(nn.Module):
-    def __init__(self, in_channels, out_channels, kernel_size, stride=1, padding=0, dilation=1, pad_type="reflect", activation="lrelu", norm="none", sn=False):
+    def __init__(
+        self, in_channels, out_channels, kernel_size, stride=1, padding=0, dilation=1, pad_type="reflect", activation="lrelu", norm="none", sn=False
+    ):
         super(GatedConv2d, self).__init__()
         # Initialize the padding scheme
         if pad_type == "reflect":

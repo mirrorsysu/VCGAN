@@ -267,7 +267,9 @@ def cupy_kernel(strFunction, objectVariables):
 
         strTensor = strArgs[0]
         intStrides = objectVariables[strTensor].stride()
-        strIndex = ["((" + strArgs[intArg + 1].replace("{", "(").replace("}", ")").strip() + ")*" + str(intStrides[intArg]) + ")" for intArg in range(intArgs)]
+        strIndex = [
+            "((" + strArgs[intArg + 1].replace("{", "(").replace("}", ")").strip() + ")*" + str(intStrides[intArg]) + ")" for intArg in range(intArgs)
+        ]
 
         strKernel = strKernel.replace(objectMatch.group(0), strTensor + "[" + str.join("+", strIndex) + "]")
     # end
@@ -301,13 +303,31 @@ class _FunctionCorrelation(torch.autograd.Function):
 
         if first.is_cuda == True:
             n = first.size(2) * first.size(3)
-            cupy_launch("kernel_Correlation_rearrange", cupy_kernel("kernel_Correlation_rearrange", {"input": first, "output": rbot0}))(grid=tuple([int((n + 16 - 1) / 16), first.size(1), first.size(0)]), block=tuple([16, 1, 1]), args=[n, first.data_ptr(), rbot0.data_ptr()], stream=Stream)
+            cupy_launch("kernel_Correlation_rearrange", cupy_kernel("kernel_Correlation_rearrange", {"input": first, "output": rbot0}))(
+                grid=tuple([int((n + 16 - 1) / 16), first.size(1), first.size(0)]),
+                block=tuple([16, 1, 1]),
+                args=[n, first.data_ptr(), rbot0.data_ptr()],
+                stream=Stream,
+            )
 
             n = second.size(2) * second.size(3)
-            cupy_launch("kernel_Correlation_rearrange", cupy_kernel("kernel_Correlation_rearrange", {"input": second, "output": rbot1}))(grid=tuple([int((n + 16 - 1) / 16), second.size(1), second.size(0)]), block=tuple([16, 1, 1]), args=[n, second.data_ptr(), rbot1.data_ptr()], stream=Stream)
+            cupy_launch("kernel_Correlation_rearrange", cupy_kernel("kernel_Correlation_rearrange", {"input": second, "output": rbot1}))(
+                grid=tuple([int((n + 16 - 1) / 16), second.size(1), second.size(0)]),
+                block=tuple([16, 1, 1]),
+                args=[n, second.data_ptr(), rbot1.data_ptr()],
+                stream=Stream,
+            )
 
             n = output.size(1) * output.size(2) * output.size(3)
-            cupy_launch("kernel_Correlation_updateOutput", cupy_kernel("kernel_Correlation_updateOutput", {"rbot0": rbot0, "rbot1": rbot1, "top": output}))(grid=tuple([output.size(3), output.size(2), output.size(0)]), block=tuple([32, 1, 1]), shared_mem=first.size(1) * 4, args=[n, rbot0.data_ptr(), rbot1.data_ptr(), output.data_ptr()], stream=Stream)
+            cupy_launch(
+                "kernel_Correlation_updateOutput", cupy_kernel("kernel_Correlation_updateOutput", {"rbot0": rbot0, "rbot1": rbot1, "top": output})
+            )(
+                grid=tuple([output.size(3), output.size(2), output.size(0)]),
+                block=tuple([32, 1, 1]),
+                shared_mem=first.size(1) * 4,
+                args=[n, rbot0.data_ptr(), rbot1.data_ptr(), output.data_ptr()],
+                stream=Stream,
+            )
 
         elif first.is_cuda == False:
             raise NotImplementedError()
@@ -331,14 +351,36 @@ class _FunctionCorrelation(torch.autograd.Function):
             if gradFirst is not None:
                 for intSample in range(first.size(0)):
                     n = first.size(1) * first.size(2) * first.size(3)
-                    cupy_launch("kernel_Correlation_updateGradFirst", cupy_kernel("kernel_Correlation_updateGradFirst", {"rbot0": rbot0, "rbot1": rbot1, "gradOutput": gradOutput, "gradFirst": gradFirst, "gradSecond": None}))(grid=tuple([int((n + 512 - 1) / 512), 1, 1]), block=tuple([512, 1, 1]), args=[n, intSample, rbot0.data_ptr(), rbot1.data_ptr(), gradOutput.data_ptr(), gradFirst.data_ptr(), None], stream=Stream)
+                    cupy_launch(
+                        "kernel_Correlation_updateGradFirst",
+                        cupy_kernel(
+                            "kernel_Correlation_updateGradFirst",
+                            {"rbot0": rbot0, "rbot1": rbot1, "gradOutput": gradOutput, "gradFirst": gradFirst, "gradSecond": None},
+                        ),
+                    )(
+                        grid=tuple([int((n + 512 - 1) / 512), 1, 1]),
+                        block=tuple([512, 1, 1]),
+                        args=[n, intSample, rbot0.data_ptr(), rbot1.data_ptr(), gradOutput.data_ptr(), gradFirst.data_ptr(), None],
+                        stream=Stream,
+                    )
                 # end
             # end
 
             if gradSecond is not None:
                 for intSample in range(first.size(0)):
                     n = first.size(1) * first.size(2) * first.size(3)
-                    cupy_launch("kernel_Correlation_updateGradSecond", cupy_kernel("kernel_Correlation_updateGradSecond", {"rbot0": rbot0, "rbot1": rbot1, "gradOutput": gradOutput, "gradFirst": None, "gradSecond": gradSecond}))(grid=tuple([int((n + 512 - 1) / 512), 1, 1]), block=tuple([512, 1, 1]), args=[n, intSample, rbot0.data_ptr(), rbot1.data_ptr(), gradOutput.data_ptr(), None, gradSecond.data_ptr()], stream=Stream)
+                    cupy_launch(
+                        "kernel_Correlation_updateGradSecond",
+                        cupy_kernel(
+                            "kernel_Correlation_updateGradSecond",
+                            {"rbot0": rbot0, "rbot1": rbot1, "gradOutput": gradOutput, "gradFirst": None, "gradSecond": gradSecond},
+                        ),
+                    )(
+                        grid=tuple([int((n + 512 - 1) / 512), 1, 1]),
+                        block=tuple([512, 1, 1]),
+                        args=[n, intSample, rbot0.data_ptr(), rbot1.data_ptr(), gradOutput.data_ptr(), None, gradSecond.data_ptr()],
+                        stream=Stream,
+                    )
                 # end
             # end
 
