@@ -210,7 +210,7 @@ class FirstStageNet(nn.Module):
         self.down3 = Conv2dLayer(opt.start_channels * 4, opt.start_channels * 8, 4, 2, 1, pad_type=opt.pad, activation=opt.activ_g, norm=opt.norm)
         self.down4 = Conv2dLayer(opt.start_channels * 8, opt.start_channels * 16, 4, 2, 1, pad_type=opt.pad, activation=opt.activ_g, norm=opt.norm)
         self.down5 = Conv2dLayer(opt.start_channels * 16, opt.start_channels * 16, 4, 2, 1, pad_type=opt.pad, activation=opt.activ_g, norm=opt.norm)
-        self.down6 = Conv2dLayer(opt.start_channels * 48, opt.start_channels * 16, 4, 2, 1, pad_type=opt.pad, activation=opt.activ_g, norm=opt.norm)
+        self.down6 = Conv2dLayer(opt.start_channels * 32, opt.start_channels * 16, 4, 2, 1, pad_type=opt.pad, activation=opt.activ_g, norm=opt.norm)
         # Up sampling part of generator
         self.up1 = TransposeConv2dLayer(
             opt.start_channels * 16, opt.start_channels * 16, 3, 1, 1, pad_type=opt.pad, activation=opt.activ_g, norm=opt.norm
@@ -246,8 +246,8 @@ class FirstStageNet(nn.Module):
         d4 = self.down4(d3)  # out: batch * 512 * 16 * 16
         d5 = self.down5(d4)  # out: batch * 512 * 8 * 8
         global_features = self.fenet(x)                         # out: batch * 512 * 8 * 8
-        global_features2 = self.fenet2(x)                       # out: batch * 512 * 8 * 8
-        d5_ = torch.cat((d5, global_features, global_features2), 1)               # out: batch * (1536 = 512 + 512) * 8 * 8
+        # global_features2 = self.fenet2(x)                       # out: batch * 512 * 8 * 8
+        d5_ = torch.cat((d5, global_features), 1)               # out: batch * (1536 = 512 + 512) * 8 * 8
 
         d6 = self.down6(d5_)  # out: batch * 512 * 4 * 4
         # Decoder
