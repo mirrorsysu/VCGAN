@@ -1,8 +1,8 @@
-models/*
-samples/*
-first_stage_results/*
+models/
+samples/
+results/
 trained_models/*
-checkpoints/*
+checkpoints/
 log.csv
 
 # Mac
