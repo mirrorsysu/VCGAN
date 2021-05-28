@@ -178,7 +178,9 @@ def trainer_noGAN(opt):
                             x_t_last = in_part[iter_long_frame].cuda()  # this 'last' is not last frame; it is just to save memory!!!
                             o_t_last_2_t = pwcnet.PWCEstimate(flownet, x_t, x_t_last)  # this 'last' is not last frame; it is just to save memory!!!
                             x_t_warp = pwcnet.PWCNetBackward((x_t_last + 1) / 2, o_t_last_2_t)  # time long range => time t warp result; range: [0, 1]
-                            p_t_last = p_list[iter_long_frame]  # extract the long range generated frame to compute the warped reuslt; this 'last' is not last frame; it is just to save memory!!!
+                            p_t_last = p_list[
+                                iter_long_frame
+                            ]  # extract the long range generated frame to compute the warped reuslt; this 'last' is not last frame; it is just to save memory!!!
                             p_t_warp = pwcnet.PWCNetBackward((p_t_last + 1) / 2, o_t_last_2_t)  # range: [0, 1]
                             mask_flow = torch.exp(-opt.mask_para * torch.sum((x_t + 1) / 2 - x_t_warp, dim=1).pow(2)).unsqueeze(1)
                             loss_flow_long += criterion_L1(mask_flow * (p_t + 1) / 2, mask_flow * p_t_warp)
@@ -192,7 +194,13 @@ def trainer_noGAN(opt):
                 loss_percep += criterion_L1(feature_fake_RGB, feature_true_RGB)
 
             # Overall Loss and optimize
-            loss = opt.lambda_l1 * loss_L1 + opt.lambda_flow * loss_flow + opt.lambda_flow_short * loss_flow_short + opt.lambda_flow_long * loss_flow_long + opt.lambda_percep * loss_percep
+            loss = (
+                opt.lambda_l1 * loss_L1
+                + opt.lambda_flow * loss_flow
+                + opt.lambda_flow_short * loss_flow_short
+                + opt.lambda_flow_long * loss_flow_long
+                + opt.lambda_percep * loss_percep
+            )
             loss.backward()
             optimizer_G.step()
 
@@ -204,10 +212,38 @@ def trainer_noGAN(opt):
 
             if opt.iter_frames > 2:
                 # Print log
-                print("[Epoch %d/%d] [Batch %d/%d] [L1 Loss: %.4f] [Percep Loss: %.4f] [Flow loss: %.8f] [Flow Loss Short: %.8f] [Flow Loss Long: %.8f] Time_left: %s" % ((epoch + opt.lr_overhead * 50 + 1), opt.epochs + opt.lr_overhead * 50, iteration, len(dataloader), loss_L1.item(), loss_percep.item(), loss_flow.item(), loss_flow_short.item(), loss_flow_long.item(), time_left))
+                print(
+                    "[Epoch %d/%d] [Batch %d/%d] [L1 Loss: %.4f] [Percep Loss: %.4f] [Flow loss: %.8f] [Flow Loss Short: %.8f] [Flow Loss Long: %.8f] Time_left: %s"
+                    % (
+                        (epoch + opt.lr_overhead * 50 + 1),
+                        opt.epochs + opt.lr_overhead * 50,
+                        iteration,
+                        len(dataloader),
+                        loss_L1.item(),
+                        loss_percep.item(),
+                        loss_flow.item(),
+                        loss_flow_short.item(),
+                        loss_flow_long.item(),
+                        time_left,
+                    )
+                )
             else:
                 # Print log
-                print("[Epoch %d/%d] [Batch %d/%d] [L1 Loss: %.4f] [Percep Loss: %.4f] [Flow loss: %.8f] [Flow Loss Short: %.8f] [Flow Loss Long: %.8f] Time_left: %s" % ((epoch + opt.epoch_overhead + 1), opt.epochs, iteration, len(dataloader), loss_L1.item(), loss_percep.item(), loss_flow.item(), loss_flow_short.item(), loss_flow_long, time_left))
+                print(
+                    "[Epoch %d/%d] [Batch %d/%d] [L1 Loss: %.4f] [Percep Loss: %.4f] [Flow loss: %.8f] [Flow Loss Short: %.8f] [Flow Loss Long: %.8f] Time_left: %s"
+                    % (
+                        (epoch + opt.epoch_overhead + 1),
+                        opt.epochs,
+                        iteration,
+                        len(dataloader),
+                        loss_L1.item(),
+                        loss_percep.item(),
+                        loss_flow.item(),
+                        loss_flow_short.item(),
+                        loss_flow_long,
+                        time_left,
+                    )
+                )
 
             # Save model at certain epochs or iterations
             save_model(opt, (epoch + opt.epoch_overhead + 1), (iters_done + 1), len(dataloader), generator)
@@ -396,7 +432,9 @@ def trainer_LSGAN(opt):
                             x_t_last = in_part[iter_long_frame].cuda()  # this 'last' is not last frame; it is just to save memory!!!
                             o_t_last_2_t = pwcnet.PWCEstimate(flownet, x_t, x_t_last)  # this 'last' is not last frame; it is just to save memory!!!
                             x_t_warp = pwcnet.PWCNetBackward((x_t_last + 1) / 2, o_t_last_2_t)  # time long range => time t warp result; range: [0, 1]
-                            p_t_last = p_list[iter_long_frame]  # extract the long range generated frame to compute the warped reuslt; this 'last' is not last frame; it is just to save memory!!!
+                            p_t_last = p_list[
+                                iter_long_frame
+                            ]  # extract the long range generated frame to compute the warped reuslt; this 'last' is not last frame; it is just to save memory!!!
                             p_t_warp = pwcnet.PWCNetBackward((p_t_last + 1) / 2, o_t_last_2_t)  # range: [0, 1]
                             mask_flow = torch.exp(-opt.mask_para * torch.sum((x_t + 1) / 2 - x_t_warp, dim=1).pow(2)).unsqueeze(1)
                             loss_flow_long += criterion_L1(mask_flow * (p_t + 1) / 2, mask_flow * p_t_warp)
@@ -423,7 +461,14 @@ def trainer_LSGAN(opt):
                 loss_G += criterion_MSE(fake_scalar, valid)
 
             # Overall Loss and optimize
-            loss = opt.lambda_l1 * loss_L1 + opt.lambda_flow * loss_flow + opt.lambda_flow_short * loss_flow_short + opt.lambda_flow_long * loss_flow_long + opt.lambda_percep * loss_percep + opt.lambda_gan * loss_G
+            loss = (
+                opt.lambda_l1 * loss_L1
+                + opt.lambda_flow * loss_flow
+                + opt.lambda_flow_short * loss_flow_short
+                + opt.lambda_flow_long * loss_flow_long
+                + opt.lambda_percep * loss_percep
+                + opt.lambda_gan * loss_G
+            )
             loss.backward()
             loss_D.backward()
             optimizer_G.step()
@@ -437,10 +482,42 @@ def trainer_LSGAN(opt):
 
             if opt.iter_frames > 2:
                 # Print log
-                print("[Epoch %d/%d] [Batch %d/%d] [L1 Loss: %.4f] [Percep Loss: %.4f] [Flow loss: %.4f] [Flow Loss Short: %.4f] [Flow Loss Long: %.4f] [G Loss: %.4f] [D Loss: %.4f] Time_left: %s" % ((epoch + opt.epoch_overhead + 1), opt.epochs, iteration, len(dataloader), loss_L1.item(), loss_percep.item(), loss_flow.item(), loss_flow_short.item(), loss_flow_long.item(), loss_G.item(), loss_D.item(), time_left))
+                print(
+                    "[Epoch %d/%d] [Batch %d/%d] [L1 Loss: %.4f] [Percep Loss: %.4f] [Flow loss: %.4f] [Flow Loss Short: %.4f] [Flow Loss Long: %.4f] [G Loss: %.4f] [D Loss: %.4f] Time_left: %s"
+                    % (
+                        (epoch + opt.epoch_overhead + 1),
+                        opt.epochs,
+                        iteration,
+                        len(dataloader),
+                        loss_L1.item(),
+                        loss_percep.item(),
+                        loss_flow.item(),
+                        loss_flow_short.item(),
+                        loss_flow_long.item(),
+                        loss_G.item(),
+                        loss_D.item(),
+                        time_left,
+                    )
+                )
             else:
                 # Print log
-                print("[Epoch %d/%d] [Batch %d/%d] [L1 Loss: %.4f] [Percep Loss: %.4f] [Flow loss: %.4f] [Flow Loss Short: %.4f] [Flow Loss Long: %.4f] [G Loss: %.4f] [D Loss: %.4f] Time_left: %s" % ((epoch + opt.epoch_overhead + 1), opt.epochs, iteration, len(dataloader), loss_L1.item(), loss_percep.item(), loss_flow.item(), loss_flow_short.item(), loss_flow_long, loss_G.item(), loss_D.item(), time_left))
+                print(
+                    "[Epoch %d/%d] [Batch %d/%d] [L1 Loss: %.4f] [Percep Loss: %.4f] [Flow loss: %.4f] [Flow Loss Short: %.4f] [Flow Loss Long: %.4f] [G Loss: %.4f] [D Loss: %.4f] Time_left: %s"
+                    % (
+                        (epoch + opt.epoch_overhead + 1),
+                        opt.epochs,
+                        iteration,
+                        len(dataloader),
+                        loss_L1.item(),
+                        loss_percep.item(),
+                        loss_flow.item(),
+                        loss_flow_short.item(),
+                        loss_flow_long,
+                        loss_G.item(),
+                        loss_D.item(),
+                        time_left,
+                    )
+                )
 
             # Save model at certain epochs or iterations
             save_model(opt, (epoch + opt.epoch_overhead + 1), (iters_done + 1), len(dataloader), generator)
@@ -622,7 +699,9 @@ def trainer_WGAN(opt):
                             x_t_last = in_part[iter_long_frame].cuda()  # this 'last' is not last frame; it is just to save memory!!!
                             o_t_last_2_t = pwcnet.PWCEstimate(flownet, x_t, x_t_last)  # this 'last' is not last frame; it is just to save memory!!!
                             x_t_warp = pwcnet.PWCNetBackward((x_t_last + 1) / 2, o_t_last_2_t)  # time long range => time t warp result; range: [0, 1]
-                            p_t_last = p_list[iter_long_frame]  # extract the long range generated frame to compute the warped reuslt; this 'last' is not last frame; it is just to save memory!!!
+                            p_t_last = p_list[
+                                iter_long_frame
+                            ]  # extract the long range generated frame to compute the warped reuslt; this 'last' is not last frame; it is just to save memory!!!
                             p_t_warp = pwcnet.PWCNetBackward((p_t_last + 1) / 2, o_t_last_2_t)  # range: [0, 1]
                             mask_flow = torch.exp(-opt.mask_para * torch.sum((x_t + 1) / 2 - x_t_warp, dim=1).pow(2)).unsqueeze(1)
                             loss_flow_long += criterion_L1(mask_flow * (p_t + 1) / 2, mask_flow * p_t_warp)
@@ -647,7 +726,14 @@ def trainer_WGAN(opt):
                 loss_G = -torch.mean(fake_scalar)
 
             # Overall Loss and optimize
-            loss = loss_L1 + opt.lambda_flow * loss_flow + opt.lambda_flow_short * loss_flow_short + opt.lambda_flow_long * loss_flow_long + opt.lambda_percep * loss_percep + opt.lambda_gan * loss_G
+            loss = (
+                loss_L1
+                + opt.lambda_flow * loss_flow
+                + opt.lambda_flow_short * loss_flow_short
+                + opt.lambda_flow_long * loss_flow_long
+                + opt.lambda_percep * loss_percep
+                + opt.lambda_gan * loss_G
+            )
             loss.backward()
             loss_D.backward()
             optimizer_G.step()
@@ -661,10 +747,42 @@ def trainer_WGAN(opt):
 
             if opt.iter_frames > 2:
                 # Print log
-                print("[Epoch %d/%d] [Batch %d/%d] [L1 Loss: %.4f] [Percep Loss: %.4f] [Flow loss: %.4f] [Flow Loss Short: %.4f] [Flow Loss Long: %.4f] [G Loss: %.4f] [D Loss: %.4f] Time_left: %s" % ((epoch + opt.epoch_overhead + 1), opt.epochs, iteration, len(dataloader), loss_L1.item(), loss_percep.item(), loss_flow.item(), loss_flow_short.item(), loss_flow_long.item(), loss_G.item(), loss_D.item(), time_left))
+                print(
+                    "[Epoch %d/%d] [Batch %d/%d] [L1 Loss: %.4f] [Percep Loss: %.4f] [Flow loss: %.4f] [Flow Loss Short: %.4f] [Flow Loss Long: %.4f] [G Loss: %.4f] [D Loss: %.4f] Time_left: %s"
+                    % (
+                        (epoch + opt.epoch_overhead + 1),
+                        opt.epochs,
+                        iteration,
+                        len(dataloader),
+                        loss_L1.item(),
+                        loss_percep.item(),
+                        loss_flow.item(),
+                        loss_flow_short.item(),
+                        loss_flow_long.item(),
+                        loss_G.item(),
+                        loss_D.item(),
+                        time_left,
+                    )
+                )
             else:
                 # Print log
-                print("\r%s: [Epoch %d/%d] [Batch %d/%d] [L1 Loss: %.4f] [Percep Loss: %.4f] [Flow loss: %.4f] [Flow Loss Short: %.4f] [Flow Loss Long: %.4f] [G Loss: %.4f] [D Loss: %.4f] Time_left: %s" % ((epoch + opt.epoch_overhead + 1), opt.epochs, iteration, len(dataloader), loss_L1.item(), loss_percep.item(), loss_flow.item(), loss_flow_short.item(), loss_flow_long, loss_G.item(), loss_D.item(), time_left))
+                print(
+                    "\r%s: [Epoch %d/%d] [Batch %d/%d] [L1 Loss: %.4f] [Percep Loss: %.4f] [Flow loss: %.4f] [Flow Loss Short: %.4f] [Flow Loss Long: %.4f] [G Loss: %.4f] [D Loss: %.4f] Time_left: %s"
+                    % (
+                        (epoch + opt.epoch_overhead + 1),
+                        opt.epochs,
+                        iteration,
+                        len(dataloader),
+                        loss_L1.item(),
+                        loss_percep.item(),
+                        loss_flow.item(),
+                        loss_flow_short.item(),
+                        loss_flow_long,
+                        loss_G.item(),
+                        loss_D.item(),
+                        time_left,
+                    )
+                )
 
             # Save model at certain epochs or iterations
             save_model(opt, (epoch + opt.epoch_overhead + 1), (iters_done + 1), len(dataloader), generator)
@@ -871,7 +989,9 @@ def trainer_WGANGP(opt):
                             x_t_last = in_part[iter_long_frame].cuda()  # this 'last' is not last frame; it is just to save memory!!!
                             o_t_last_2_t = pwcnet.PWCEstimate(flownet, x_t, x_t_last)  # this 'last' is not last frame; it is just to save memory!!!
                             x_t_warp = pwcnet.PWCNetBackward((x_t_last + 1) / 2, o_t_last_2_t)  # time long range => time t warp result; range: [0, 1]
-                            p_t_last = p_list[iter_long_frame]  # extract the long range generated frame to compute the warped reuslt; this 'last' is not last frame; it is just to save memory!!!
+                            p_t_last = p_list[
+                                iter_long_frame
+                            ]  # extract the long range generated frame to compute the warped reuslt; this 'last' is not last frame; it is just to save memory!!!
                             p_t_warp = pwcnet.PWCNetBackward((p_t_last + 1) / 2, o_t_last_2_t)  # range: [0, 1]
                             mask_flow = torch.exp(-opt.mask_para * torch.sum((x_t + 1) / 2 - x_t_warp, dim=1).pow(2)).unsqueeze(1)
                             loss_flow_long += criterion_L1(mask_flow * (p_t + 1) / 2, mask_flow * p_t_warp)
@@ -898,7 +1018,14 @@ def trainer_WGANGP(opt):
                 loss_G = -torch.mean(fake_scalar)
 
             # Overall Loss and optimize
-            loss = loss_L1 + opt.lambda_flow * loss_flow + opt.lambda_flow_short * loss_flow_short + opt.lambda_flow_long * loss_flow_long + opt.lambda_percep * loss_percep + opt.lambda_gan * loss_G
+            loss = (
+                loss_L1
+                + opt.lambda_flow * loss_flow
+                + opt.lambda_flow_short * loss_flow_short
+                + opt.lambda_flow_long * loss_flow_long
+                + opt.lambda_percep * loss_percep
+                + opt.lambda_gan * loss_G
+            )
             loss.backward()
             loss_D.backward()
             optimizer_G.step()
@@ -912,10 +1039,42 @@ def trainer_WGANGP(opt):
 
             if opt.iter_frames > 2:
                 # Print log
-                print("[Epoch %d/%d] [Batch %d/%d] [L1 Loss: %.4f] [Percep Loss: %.4f] [Flow loss: %.4f] [Flow Loss Short: %.4f] [Flow Loss Long: %.4f] [G Loss: %.4f] [D Loss: %.4f] Time_left: %s" % ((epoch + opt.epoch_overhead + 1), opt.epochs, iteration, len(dataloader), loss_L1.item(), loss_percep.item(), loss_flow.item(), loss_flow_short.item(), loss_flow_long.item(), loss_G.item(), loss_D.item(), time_left))
+                print(
+                    "[Epoch %d/%d] [Batch %d/%d] [L1 Loss: %.4f] [Percep Loss: %.4f] [Flow loss: %.4f] [Flow Loss Short: %.4f] [Flow Loss Long: %.4f] [G Loss: %.4f] [D Loss: %.4f] Time_left: %s"
+                    % (
+                        (epoch + opt.epoch_overhead + 1),
+                        opt.epochs,
+                        iteration,
+                        len(dataloader),
+                        loss_L1.item(),
+                        loss_percep.item(),
+                        loss_flow.item(),
+                        loss_flow_short.item(),
+                        loss_flow_long.item(),
+                        loss_G.item(),
+                        loss_D.item(),
+                        time_left,
+                    )
+                )
             else:
                 # Print log
-                print("[Epoch %d/%d] [Batch %d/%d] [L1 Loss: %.4f] [Percep Loss: %.4f] [Flow loss: %.4f] [Flow Loss Short: %.4f] [Flow Loss Long: %.4f] [G Loss: %.4f] [D Loss: %.4f] Time_left: %s" % ((epoch + opt.epoch_overhead + 1), opt.epochs, iteration, len(dataloader), loss_L1.item(), loss_percep.item(), loss_flow.item(), loss_flow_short.item(), loss_flow_long, loss_G.item(), loss_D.item(), time_left))
+                print(
+                    "[Epoch %d/%d] [Batch %d/%d] [L1 Loss: %.4f] [Percep Loss: %.4f] [Flow loss: %.4f] [Flow Loss Short: %.4f] [Flow Loss Long: %.4f] [G Loss: %.4f] [D Loss: %.4f] Time_left: %s"
+                    % (
+                        (epoch + opt.epoch_overhead + 1),
+                        opt.epochs,
+                        iteration,
+                        len(dataloader),
+                        loss_L1.item(),
+                        loss_percep.item(),
+                        loss_flow.item(),
+                        loss_flow_short.item(),
+                        loss_flow_long,
+                        loss_G.item(),
+                        loss_D.item(),
+                        time_left,
+                    )
+                )
 
             # Save model at certain epochs or iterations
             save_model(opt, (epoch + opt.epoch_overhead + 1), (iters_done + 1), len(dataloader), generator)

@@ -1,6 +1,7 @@
 import argparse
 from pathlib import Path
 
+
 def str2bool(str):
     return True if str.lower() == "true" else False
 
@@ -16,13 +17,23 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     # pre-train, saving, and loading parameters
     parser.add_argument("--stage", type=str, help="First or Second")
-    parser.add_argument("--log_path", type=str2Path, default=Path('./log.csv'), help="load model ot not")
+    parser.add_argument("--log_path", type=str2Path, default=Path("./log.csv"), help="load model ot not")
     parser.add_argument("--load_model", type=str2bool, default=False, help="load model ot not")
     parser.add_argument("--load_path", type=str2Path, default="./models/First_Stage_final.pth", help="load the pre-trained model with certain epoch")
     parser.add_argument("--load_fe", type=str2bool, default=True, help="load pretrain fe or not")
-    parser.add_argument("--fe_path", type=str2Path, default="./trained_models/resnet50_in_epoch150_bs256.pth", help="the path that contains the pre-trained ResNet model")
+    parser.add_argument(
+        "--fe_path",
+        type=str2Path,
+        default="./trained_models/resnet50_in_epoch150_bs256.pth",
+        help="the path that contains the pre-trained ResNet model",
+    )
     parser.add_argument("--load_perceptual", type=str2bool, default=True, help="load pretrain perceptual or not")
-    parser.add_argument("--perceptual_path", type=str2Path, default="./trained_models/vgg16_pretrained.pth", help="the path that contains the pre-trained VGG-16 model")
+    parser.add_argument(
+        "--perceptual_path",
+        type=str2Path,
+        default="./trained_models/vgg16_pretrained.pth",
+        help="the path that contains the pre-trained VGG-16 model",
+    )
     parser.add_argument("--begin_epoch", type=int, default=0, help="the begin epoch of train")
 
     parser.add_argument("--save_by_epoch", type=int, default=1, help="interval between model checkpoints (by epochs)")
@@ -33,9 +44,18 @@ if __name__ == "__main__":
     parser.add_argument("--multi_gpu", type=str2bool, default=False, help="True for more than 1 GPU, we recommend to use 4 NVIDIA Tesla v100 GPUs")
     parser.add_argument("--cudnn_benchmark", type=str2bool, default=True, help="True for unchanged input data type")
 
-    parser.add_argument("--pwcnet_path", type=str2Path, default="./trained_models/pwcNet-default.pytorch", help="the path that contains the pre-trained PWCNet model")
-    parser.add_argument("--video_class_txt", type=str2Path, default="./txt/DAVIS_videvo_train_class.txt", help="the path that contains DAVIS_videvo_train_class.txt")
-    parser.add_argument("--video_imagelist_txt", type=str2Path, default="./txt/DAVIS_videvo_train_imagelist.txt", help="the path that contains DAVIS_videvo_train_imagelist.txt")
+    parser.add_argument(
+        "--pwcnet_path", type=str2Path, default="./trained_models/pwcNet-default.pytorch", help="the path that contains the pre-trained PWCNet model"
+    )
+    parser.add_argument(
+        "--video_class_txt", type=str2Path, default="./txt/DAVIS_videvo_train_class.txt", help="the path that contains DAVIS_videvo_train_class.txt"
+    )
+    parser.add_argument(
+        "--video_imagelist_txt",
+        type=str2Path,
+        default="./txt/DAVIS_videvo_train_imagelist.txt",
+        help="the path that contains DAVIS_videvo_train_imagelist.txt",
+    )
 
     # dataset
     parser.add_argument("--baseroot", type=str2Path, default="C:\\Users\\yzzha\\Desktop\\dataset\\1", help="color image baseroot")
