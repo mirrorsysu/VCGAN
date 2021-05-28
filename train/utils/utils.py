@@ -25,15 +25,15 @@ def create_generator(opt):
         network.weights_init(colorizationnet, init_type=opt.init_type, init_gain=opt.init_gain)
         if opt.load_fe:
             pretrained_dict = torch.load(opt.fe_path)
-            load_dict(colorizationnet.fenet, pretrained_dict, 'fenet')
-            load_dict(colorizationnet.fenet2, pretrained_dict, 'fenet2')
+            load_dict(colorizationnet.fenet, pretrained_dict, "fenet")
+            load_dict(colorizationnet.fenet2, pretrained_dict, "fenet2")
             print("Generator is loaded [fenet:%s]" % (opt.fe_path))
         else:
             print("Generator without load fe")
     else:
         # Initialize the networks
         pretrained_dict = torch.load(opt.load_path)
-        load_dict(colorizationnet, pretrained_dict, 'colorizationnet')
+        load_dict(colorizationnet, pretrained_dict, "colorizationnet")
         print("Generator is loaded! [load_path:%s]" % (opt.load_path))
     return colorizationnet
 
@@ -68,21 +68,21 @@ def create_perceptualnet(opt):
     if opt.load_perceptual:
         # Pre-trained VGG-16
         pretrained_dict = torch.load(opt.perceptual_path)
-        load_dict(perceptualnet, pretrained_dict, 'perceptualnet')
+        load_dict(perceptualnet, pretrained_dict, "perceptualnet")
     # It does not gradient
     for param in perceptualnet.parameters():
         param.requires_grad = False
     return perceptualnet
 
 
-def load_dict(process_net, pretrained_dict, label=''):
+def load_dict(process_net, pretrained_dict, label=""):
     # Get the dict from processing network
     process_dict = process_net.state_dict()
     # Delete the extra keys of pretrained_dict that do not belong to process_dict
 
     for k, _ in process_dict.items():
         if k not in pretrained_dict:
-            print('[%s] not load layer: %s' % (label, k))
+            print("[%s] not load layer: %s" % (label, k))
 
     pretrained_dict = {k: v for k, v in pretrained_dict.items() if k in process_dict}
     # Update process_dict using pretrained_dict

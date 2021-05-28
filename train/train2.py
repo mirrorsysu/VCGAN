@@ -13,11 +13,24 @@ if __name__ == "__main__":
     parser.add_argument("--save_by_iter", type=int, default=10000, help="interval between model checkpoints (by iterations)")
     parser.add_argument("--save_path", type=str, default="./models", help="save the pre-trained model to certain path")
     parser.add_argument("--sample_path", type=str, default="./samples", help="save the pre-trained model to certain path")
-    parser.add_argument("--load_name", type=str, default="./trained_models/First_Stage_final.pth", help="load the pre-trained model with certain epoch")
-    parser.add_argument("--pwcnet_path", type=str, default="./trained_models/pwcNet-default.pytorch", help="the path that contains the pre-trained PWCNet model")
-    parser.add_argument("--perceptual_path", type=str, default="./trained_models/vgg16_pretrained.pth", help="the path that contains the pre-trained VGG-16 model")
-    parser.add_argument("--video_class_txt", type=str, default="./txt/DAVIS_videvo_train_class.txt", help="the path that contains DAVIS_videvo_train_class.txt")
-    parser.add_argument("--video_imagelist_txt", type=str, default="./txt/DAVIS_videvo_train_imagelist.txt", help="the path that contains DAVIS_videvo_train_imagelist.txt")
+    parser.add_argument(
+        "--load_name", type=str, default="./trained_models/First_Stage_final.pth", help="load the pre-trained model with certain epoch"
+    )
+    parser.add_argument(
+        "--pwcnet_path", type=str, default="./trained_models/pwcNet-default.pytorch", help="the path that contains the pre-trained PWCNet model"
+    )
+    parser.add_argument(
+        "--perceptual_path", type=str, default="./trained_models/vgg16_pretrained.pth", help="the path that contains the pre-trained VGG-16 model"
+    )
+    parser.add_argument(
+        "--video_class_txt", type=str, default="./txt/DAVIS_videvo_train_class.txt", help="the path that contains DAVIS_videvo_train_class.txt"
+    )
+    parser.add_argument(
+        "--video_imagelist_txt",
+        type=str,
+        default="./txt/DAVIS_videvo_train_imagelist.txt",
+        help="the path that contains DAVIS_videvo_train_imagelist.txt",
+    )
     # GPU parameters
     parser.add_argument("--multi_gpu", type=bool, default=False, help="True for more than 1 GPU, we recommend to use 4 NVIDIA Tesla v100 GPUs")
     parser.add_argument("--cudnn_benchmark", type=bool, default=True, help="True for unchanged input data type")
@@ -26,7 +39,9 @@ if __name__ == "__main__":
     parser.add_argument("--batch_size", type=int, default=1, help="size of the batches")
     parser.add_argument("--lr_g", type=float, default=1e-5, help="Adam: learning rate for G")
     parser.add_argument("--lr_d", type=float, default=4e-5, help="Adam: learning rate for D")
-    parser.add_argument("--epoch_overhead", type=int, default=0, help="overhead for lr decrease / saving on different resolutions (trained epochs)")  # change if fine-tune
+    parser.add_argument(
+        "--epoch_overhead", type=int, default=0, help="overhead for lr decrease / saving on different resolutions (trained epochs)"
+    )  # change if fine-tune
     parser.add_argument("--b1", type=float, default=0.5, help="Adam: decay of first order momentum of gradient")
     parser.add_argument("--b2", type=float, default=0.999, help="Adam: decay of second order momentum of gradient")
     parser.add_argument("--weight_decay", type=int, default=0, help="weight decay for optimizer")

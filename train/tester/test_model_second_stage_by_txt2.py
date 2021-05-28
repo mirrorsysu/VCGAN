@@ -64,11 +64,23 @@ if __name__ == "__main__":
     # ----------------------------------------
     parser = argparse.ArgumentParser()
     # testing parameters
-    parser.add_argument("--videopath", type=str, default="F:\\dataset, my paper related\\VCGAN dataset\\test\\input\\DAVIS-gray", help="testing video folder path")
-    parser.add_argument("--savepath", type=str, default="F:\\submitted papers\\my papers\\VCGAN v3\\VCGAN results\\l110_per0_gan1_short3_long5_lr5e-5\\DAVIS", help="saving folder path")
+    parser.add_argument(
+        "--videopath", type=str, default="F:\\dataset, my paper related\\VCGAN dataset\\test\\input\\DAVIS-gray", help="testing video folder path"
+    )
+    parser.add_argument(
+        "--savepath",
+        type=str,
+        default="F:\\submitted papers\\my papers\\VCGAN v3\\VCGAN results\\l110_per0_gan1_short3_long5_lr5e-5\\DAVIS",
+        help="saving folder path",
+    )
     parser.add_argument("--class_txt", type=str, default="./txt/DAVIS_test_class.txt", help="DAVIS / videvo classes")
     parser.add_argument("--imagelist_txt", type=str, default="./txt/DAVIS_test_imagelist.txt", help="DAVIS / videvo image full paths")
-    parser.add_argument("--load_name", type=str, default="./models_for_ablation_study/setting3/models_l110_per0_gan1_short3_long5_lr5e-5/Second_Stage_epoch500_bs1_448p.pth", help="load the trained pth model with certain epoch")  # default = './models_l110_per5_gan1_short5_long10_lr5e-5/Second_Stage_epoch500_bs1_448p.pth', \
+    parser.add_argument(
+        "--load_name",
+        type=str,
+        default="./models_for_ablation_study/setting3/models_l110_per0_gan1_short3_long5_lr5e-5/Second_Stage_epoch500_bs1_448p.pth",
+        help="load the trained pth model with certain epoch",
+    )  # default = './models_l110_per5_gan1_short5_long10_lr5e-5/Second_Stage_epoch500_bs1_448p.pth', \
     parser.add_argument("--pwcnet_path", type=str, default="./trained_models/pwcNet-default.pytorch", help="the path that contains the PWCNet model")
     parser.add_argument("--crop_size_h", type=int, default=448, help="single patch size")
     parser.add_argument("--crop_size_w", type=int, default=832, help="single patch size")

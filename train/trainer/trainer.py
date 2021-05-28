@@ -14,6 +14,7 @@ from utils import dataset
 
 import csv
 
+
 def trainer_noGAN(opt):
     # cudnn benchmark
     cudnn.benchmark = opt.cudnn_benchmark
@@ -44,8 +45,8 @@ def trainer_noGAN(opt):
     # Optimizers
     optimizer_G = torch.optim.Adam(generator.parameters(), lr=opt.lr_g, betas=(opt.b1, opt.b2))
 
-    fieldnames = ['Epoch', 'Batch', 'Pixel-level Loss', 'Perceptual Loss']
-    with open(opt.log_path, 'w+') as fp:
+    fieldnames = ["Epoch", "Batch", "Pixel-level Loss", "Perceptual Loss"]
+    with open(opt.log_path, "w+") as fp:
         writer = csv.DictWriter(fp, fieldnames=fieldnames)
         writer.writeheader()
 
@@ -119,18 +120,21 @@ def trainer_noGAN(opt):
             prev_time = time.time()
 
             # Print log
-            print("\r[Epoch %d/%d] [Batch %d/%d] [Pixel-level Loss: %.4f] [Perceptual Loss: %.4f] Time_left: %s" % (epoch, opt.epochs, i, len(dataloader), loss_L1.item(), loss_percep.item(), time_left))
+            print(
+                "\r[Epoch %d/%d] [Batch %d/%d] [Pixel-level Loss: %.4f] [Perceptual Loss: %.4f] Time_left: %s"
+                % (epoch, opt.epochs, i, len(dataloader), loss_L1.item(), loss_percep.item(), time_left)
+            )
 
-            with open(opt.log_path, 'a') as fp:
+            with open(opt.log_path, "a") as fp:
                 writer = csv.DictWriter(fp, fieldnames=fieldnames)
-                writer.writerow(dict(zip(fieldnames, [epoch, i , loss_L1.item(), loss_percep.item()])))
+                writer.writerow(dict(zip(fieldnames, [epoch, i, loss_L1.item(), loss_percep.item()])))
             """
             img_list = [fake_RGB, true_RGB]
             name_list = ['pred', 'gt']
             utils.save_sample_png(sample_folder = opt.sample_path, sample_name = 'iter%d' % (i + 1), img_list = img_list, name_list = name_list)
             """
         # Save model at certain epochs or iterations
-        if (epoch % opt.save_by_epoch == 0):
+        if epoch % opt.save_by_epoch == 0:
             save_model(opt, epoch, generator)
 
         # Learning rate decrease at certain epochs
@@ -309,7 +313,10 @@ def trainer_LSGAN(opt):
             prev_time = time.time()
 
             # Print log
-            print("\r[Epoch %d/%d] [Batch %d/%d] [Pixel-level Loss: %.4f] [Perceptual Loss: %.4f] [D Loss: %.4f] [G Loss: %.4f] Time_left: %s" % ((epoch + 1), opt.epochs, i, len(dataloader), loss_L1.item(), loss_percep.item(), loss_D.item(), loss_GAN.item(), time_left))
+            print(
+                "\r[Epoch %d/%d] [Batch %d/%d] [Pixel-level Loss: %.4f] [Perceptual Loss: %.4f] [D Loss: %.4f] [G Loss: %.4f] Time_left: %s"
+                % ((epoch + 1), opt.epochs, i, len(dataloader), loss_L1.item(), loss_percep.item(), loss_D.item(), loss_GAN.item(), time_left)
+            )
 
             # Save model at certain epochs or iterations
             save_model(opt, (epoch + 1), (iters_done + 1), len(dataloader), generator)
@@ -478,7 +485,10 @@ def trainer_WGAN(opt):
             prev_time = time.time()
 
             # Print log
-            print("\r[Epoch %d/%d] [Batch %d/%d] [Pixel-level Loss: %.4f] [Perceptual Loss: %.4f] [D Loss: %.4f] [G Loss: %.4f] Time_left: %s" % ((epoch + 1), opt.epochs, i, len(dataloader), loss_L1.item(), loss_percep.item(), loss_D.item(), loss_GAN.item(), time_left))
+            print(
+                "\r[Epoch %d/%d] [Batch %d/%d] [Pixel-level Loss: %.4f] [Perceptual Loss: %.4f] [D Loss: %.4f] [G Loss: %.4f] Time_left: %s"
+                % ((epoch + 1), opt.epochs, i, len(dataloader), loss_L1.item(), loss_percep.item(), loss_D.item(), loss_GAN.item(), time_left)
+            )
 
             # Save model at certain epochs or iterations
             save_model(opt, (epoch + 1), (iters_done + 1), len(dataloader), generator)
@@ -675,7 +685,10 @@ def trainer_WGANGP(opt):
             prev_time = time.time()
 
             # Print log
-            print("\r[Epoch %d/%d] [Batch %d/%d] [Pixel-level Loss: %.4f] [Perceptual Loss: %.4f] [D Loss: %.4f] [G Loss: %.4f] Time_left: %s" % ((epoch + 1), opt.epochs, i, len(dataloader), loss_L1.item(), loss_percep.item(), loss_D.item(), loss_GAN.item(), time_left))
+            print(
+                "\r[Epoch %d/%d] [Batch %d/%d] [Pixel-level Loss: %.4f] [Perceptual Loss: %.4f] [D Loss: %.4f] [G Loss: %.4f] Time_left: %s"
+                % ((epoch + 1), opt.epochs, i, len(dataloader), loss_L1.item(), loss_percep.item(), loss_D.item(), loss_GAN.item(), time_left)
+            )
 
             # Save model at certain epochs or iterations
             save_model(opt, (epoch + 1), (iters_done + 1), len(dataloader), generator)
