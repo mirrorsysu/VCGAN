@@ -1,7 +1,6 @@
 import argparse
 from pathlib import Path
 
-
 def str2bool(str):
     return True if str.lower() == "true" else False
 
@@ -17,6 +16,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     # pre-train, saving, and loading parameters
     parser.add_argument("--stage", type=str, help="First or Second")
+    parser.add_argument("--log_path", type=str2Path, default=Path('./log.csv'), help="load model ot not")
     parser.add_argument("--load_model", type=str2bool, default=False, help="load model ot not")
     parser.add_argument("--load_path", type=str2Path, default="./models/First_Stage_final.pth", help="load the pre-trained model with certain epoch")
     parser.add_argument("--load_fe", type=str2bool, default=True, help="load pretrain fe or not")
@@ -39,6 +39,7 @@ if __name__ == "__main__":
 
     # dataset
     parser.add_argument("--baseroot", type=str2Path, default="C:\\Users\\yzzha\\Desktop\\dataset\\1", help="color image baseroot")
+    parser.add_argument("--testroot", type=str2Path, default="C:\\Users\\yzzha\\Desktop\\dataset\\1", help="color image testroot")
     parser.add_argument("--num_workers", type=int, default=0, help="number of cpu threads to use during batch generation")
     parser.add_argument("--sample_size", type=int, default=1, help="sample number for the dataset at first stage")
     parser.add_argument("--crop_size", type=int, default=256, help="single patch size")  # first stage: 256 * 256

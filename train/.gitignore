@@ -1,6 +1,9 @@
 models/*
 samples/*
+first_stage_results/*
 trained_models/*
+checkpoints/*
+log.csv
 
 # Mac
 *.DS_Store

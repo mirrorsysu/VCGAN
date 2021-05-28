@@ -27,12 +27,15 @@ class RandomCrop(object):
 
 
 class ColorizationDataset(Dataset):
-    def __init__(self, opt):
+    def __init__(self, opt, train=True):
         # Note that:
         # 1. opt: all the options
         # 2. imglist: all the image names under "baseroot"
         self.opt = opt
-        self.imglist = self.get_files(opt.baseroot)
+        if train:
+            self.imglist = self.get_files(opt.baseroot)
+        else:
+            self.imglist = self.get_files(opt.testroot)
 
     def get_files(self, baseroot: Path):
         # Read a folder, return the complete path

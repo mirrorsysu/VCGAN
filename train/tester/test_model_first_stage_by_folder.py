@@ -5,17 +5,15 @@ import cv2
 import numpy as np
 import torch
 
-import network
-
+from networks import network
 
 def get_jpgs(path):
     # Read a folder, return the image name
-    ret = []
-    for root, dirs, files in os.walk(path):
-        for filespath in files:
-            ret.append(filespath)
-    return ret
-
+    ret = [] 
+    for root, dirs, files in os.walk(path):  
+        for filespath in files: 
+            ret.append(filespath) 
+    return ret[:1000]
 
 def test(grayimg, model):
     # Forward and reshape to [H, W, C], in range [-1, 1]
@@ -26,24 +24,27 @@ def test(grayimg, model):
     out_rgb = (out_rgb * 0.5 + 0.5) * 255
     out_rgb = out_rgb.astype(np.uint8)
     return out_rgb
-
-
-def getImage(imgpath):
+    
+def getImage(imgpath, opt):
     # Read the images
     grayimg = cv2.imread(imgpath, cv2.IMREAD_GRAYSCALE)
+    if grayimg.shape[:2] != (256, 256):
+        grayimg = cv2.resize(grayimg, (256, 256))
     grayimg = np.expand_dims(grayimg, 2)
-    grayimg = np.concatenate((grayimg, grayimg, grayimg), axis=2)
+    grayimg = np.concatenate((grayimg, grayimg, grayimg), axis = 2)
     # Normalized to [-1, 1]
     grayimg = (grayimg.astype(np.float64) - 128) / 128
     # To PyTorch Tensor
     grayimg = torch.from_numpy(grayimg.transpose(2, 0, 1).astype(np.float32)).contiguous()
-    grayimg = grayimg.unsqueeze(0).cuda()
+    grayimg = grayimg.unsqueeze(0).to(opt.device)
     return grayimg
-
 
 def load_model(opt):
     model = network.FirstStageNet(opt)
-    pretrained_dict = torch.load(opt.load_name)
+    if opt.test_gpu == '-1':
+        pretrained_dict = torch.load(opt.load_name, map_location=opt.device)
+    else:
+        pretrained_dict = torch.load(opt.load_name)
     # Get the dict from processing network
     process_dict = model.state_dict()
     # Delete the extra keys of pretrained_dict that do not belong to process_dict
@@ -52,14 +53,13 @@ def load_model(opt):
     process_dict.update(pretrained_dict)
     # Load the updated dict to processing network
     model.load_state_dict(process_dict)
-    model = model.cuda()
-    return model
+    model = model.to(opt.device)
 
+    return model
 
 def check_path(path):
     if not os.path.exists(path):
         os.makedirs(path)
-
 
 if __name__ == "__main__":
     # ----------------------------------------
@@ -67,30 +67,40 @@ if __name__ == "__main__":
     # ----------------------------------------
     parser = argparse.ArgumentParser()
     # testing parameters
-    parser.add_argument("--folderpath", type=str, default="C:\\Users\\yzzha\\Desktop\\dataset\\ILSVRC2012_val_256", help="testing folder path")
-    parser.add_argument("--savepath", type=str, default="F:\\submitted papers\\my papers\\VCGAN v3\\VCGAN results\\ILSVRC2012_val_256_l110_per5_gan1_short3_long5_lr5e-5", help="saving folder path")
-    parser.add_argument("--load_name", type=str, default="./models_l110_per5_gan1_short3_long5_lr5e-5/Second_Stage_epoch500_bs1_448p.pth", help="load the pre-trained model with certain epoch")  # default = './trained_models/First_Stage_final.pth', \
-    parser.add_argument("--crop_size", type=int, default=256, help="single patch size")
+    parser.add_argument('--folderpath', type = str, \
+        default = 'C:\\Users\\yzzha\\Desktop\\dataset\\ILSVRC2012_val_256', \
+            help = 'testing folder path')
+    parser.add_argument('--savepath', type = str, \
+        default = 'F:\\submitted papers\\my papers\\VCGAN v3\\VCGAN results\\ILSVRC2012_val_256_l110_per5_gan1_short3_long5_lr5e-5', help = 'saving folder path')
+    parser.add_argument('--load_name', type = str, \
+        #default = './trained_models/First_Stage_final.pth', \
+        default = './models_l110_per5_gan1_short3_long5_lr5e-5/Second_Stage_epoch500_bs1_448p.pth', \
+            help = 'load the pre-trained model with certain epoch')
+    parser.add_argument('--crop_size', type = int, default = 256, help = 'single patch size')
     # GPU parameters
-    parser.add_argument("--test_gpu", type=str, default="0", help="gpu_ids: e.g. 0  0,1  0,1,2  use -1 for CPU")
+    parser.add_argument('--test_gpu', type = str, default = '0', help = 'gpu_ids: e.g. 0  0,1  0,1,2  use -1 for CPU')
     # network parameters
-    parser.add_argument("--in_channels", type=int, default=1, help="in channel for U-Net encoder")
-    parser.add_argument("--start_channels", type=int, default=32, help="start channel for U-Net encoder")
-    parser.add_argument("--out_channels", type=int, default=3, help="out channel for U-Net decoder")
-    parser.add_argument("--pad", type=str, default="reflect", help="padding type")
-    parser.add_argument("--activ_g", type=str, default="lrelu", help="activation function for generator")
-    parser.add_argument("--activ_d", type=str, default="lrelu", help="activation function for discriminator")
-    parser.add_argument("--norm", type=str, default="in", help="normalization type")
-    parser.add_argument("--init_type", type=str, default="normal", help="intialization type for generator and discriminator")
-    parser.add_argument("--init_gain", type=float, default=0.02, help="the standard deviation if Gaussian normalization")
+    parser.add_argument('--in_channels', type = int, default = 1, help = 'in channel for U-Net encoder')
+    parser.add_argument('--start_channels', type = int, default = 32, help = 'start channel for U-Net encoder')
+    parser.add_argument('--out_channels', type = int, default = 3, help = 'out channel for U-Net decoder')
+    parser.add_argument('--pad', type = str, default = 'reflect', help = 'padding type')
+    parser.add_argument('--activ_g', type = str, default = 'lrelu', help = 'activation function for generator')
+    parser.add_argument('--activ_d', type = str, default = 'lrelu', help = 'activation function for discriminator')
+    parser.add_argument('--norm', type = str, default = 'in', help = 'normalization type')
+    parser.add_argument('--init_type', type = str, default = 'normal', help = 'intialization type for generator and discriminator')
+    parser.add_argument('--init_gain', type = float, default = 0.02, help = 'the standard deviation if Gaussian normalization')
     opt = parser.parse_args()
-
+    if opt.test_gpu == '-1':
+        opt.device = torch.device('cpu')
+    else:
+        opt.device = torch.device('cuda:{}'.format(opt.test_gpu))
+    print('device: {}'.format(opt.device))
     # ----------------------------------------
     #        Choose CUDA visible devices
     # ----------------------------------------
     os.environ["CUDA_VISIBLE_DEVICES"] = opt.test_gpu
-    print("Single-GPU mode, %s GPU is used" % (opt.test_gpu))
-
+    print('Single-GPU mode, %s GPU is used' % (opt.test_gpu))
+    
     # ----------------------------------------
     #                  Testing
     # ----------------------------------------
@@ -101,16 +111,17 @@ if __name__ == "__main__":
 
     # Get model
     model = load_model(opt)
-
+    
     # Forward
     for i, item in enumerate(imglist):
         print(i, item)
         readpath = os.path.join(opt.folderpath, item)
         savepath = os.path.join(opt.savepath, item)
         # Get image
-        img = getImage(readpath)
+        img = getImage(readpath, opt)
         # Get result [H, W, C], in range [0, 255]
         out_rgb = test(img, model)
         # Save image
         out_rgb = out_rgb[:, :, ::-1]
         cv2.imwrite(savepath, out_rgb)
+    

@@ -12,6 +12,7 @@ import torch.backends.cudnn as cudnn
 from utils import utils
 from utils import dataset
 
+import csv
 
 def trainer_noGAN(opt):
     # cudnn benchmark
@@ -43,6 +44,11 @@ def trainer_noGAN(opt):
     # Optimizers
     optimizer_G = torch.optim.Adam(generator.parameters(), lr=opt.lr_g, betas=(opt.b1, opt.b2))
 
+    fieldnames = ['Epoch', 'Batch', 'Pixel-level Loss', 'Perceptual Loss']
+    with open(opt.log_path, 'w+') as fp:
+        writer = csv.DictWriter(fp, fieldnames=fieldnames)
+        writer.writeheader()
+
     # Learning rate decrease
     def adjust_learning_rate(opt, epoch, optimizer):
         lr = opt.lr_g * (opt.lr_decrease_factor ** (epoch // opt.lr_decrease_epoch))
@@ -65,11 +71,13 @@ def trainer_noGAN(opt):
     # ----------------------------------------
 
     # Define the dataset
-    trainset = dataset.ColorizationDataset(opt)
+    trainset = dataset.ColorizationDataset(opt, train=True)
+    test_trainset = dataset.ColorizationDataset(opt, train=False)
     print("The overall number of images:", len(trainset))
 
     # Define the dataloader
     dataloader = DataLoader(trainset, batch_size=opt.batch_size, shuffle=True, num_workers=opt.num_workers, pin_memory=True)
+    test_dataloader = DataLoader(test_trainset, batch_size=1, shuffle=True, num_workers=opt.num_workers, pin_memory=True)
 
     # ----------------------------------------
     #                 Training
@@ -83,7 +91,6 @@ def trainer_noGAN(opt):
     # For loop training
     for epoch in range(opt.begin_epoch, opt.epochs):
         for i, (true_L, true_RGB) in enumerate(dataloader):
-
             # To device
             true_L = true_L.cuda()
             true_RGB = true_RGB.cuda()
@@ -114,6 +121,9 @@ def trainer_noGAN(opt):
             # Print log
             print("\r[Epoch %d/%d] [Batch %d/%d] [Pixel-level Loss: %.4f] [Perceptual Loss: %.4f] Time_left: %s" % (epoch, opt.epochs, i, len(dataloader), loss_L1.item(), loss_percep.item(), time_left))
 
+            with open(opt.log_path, 'a') as fp:
+                writer = csv.DictWriter(fp, fieldnames=fieldnames)
+                writer.writerow(dict(zip(fieldnames, [epoch, i , loss_L1.item(), loss_percep.item()])))
             """
             img_list = [fake_RGB, true_RGB]
             name_list = ['pred', 'gt']
@@ -127,8 +137,12 @@ def trainer_noGAN(opt):
         adjust_learning_rate(opt, (epoch + 1), optimizer_G)
         ### Sample data every epoch
         if (epoch + 1) % 1 == 0:
-            img_list = [fake_RGB, true_RGB]
-            name_list = ["pred", "gt"]
+            with torch.no_grad():
+                (test_true_L, test_true_RGB) = next(test_dataloader.__iter__())
+                test_true_L = test_true_L.cuda()
+                test_fake_RGB = generator(test_true_L)
+            img_list = [fake_RGB, true_RGB, test_fake_RGB, test_true_RGB]
+            name_list = ["val_pred", "val_gt", "test_pred", "test_gt"]
             utils.save_sample_png(sample_folder=opt.sample_path, sample_name="epoch%d" % (epoch + 1), img_list=img_list, name_list=name_list)
 
 
