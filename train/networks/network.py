@@ -199,8 +199,8 @@ class FirstStageNet(nn.Module):
     def __init__(self, opt):
         super(FirstStageNet, self).__init__()
         # Global feature extraction part of pre-trained ResNet-50 network
-        # self.fenet = mobilenet_v2_mir()
-        self.fenet = ResNet(Bottleneck, [3, 4, 6, 3])
+        self.fenet = mobilenet_v2_mir()
+        # self.fenet = ResNet(Bottleneck, [3, 4, 6, 3])
         # self.fenet2 = ResNet(Bottleneck, [3, 4, 6, 3])
         # 1 * 1 convolution block for making more channels
         self.begin = Conv2dLayer(opt.in_channels, opt.start_channels, 7, 1, 3, pad_type=opt.pad, activation=opt.activ_g, norm="none")
