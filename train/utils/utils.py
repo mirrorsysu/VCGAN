@@ -26,7 +26,7 @@ def create_generator(opt):
         if opt.load_fe:
             pretrained_dict = torch.load(opt.fe_path)
             load_dict(colorizationnet.fenet, pretrained_dict, 'fenet')
-            # load_dict(colorizationnet.fenet2, pretrained_dict)
+            load_dict(colorizationnet.fenet2, pretrained_dict)
             print("Generator is loaded [fenet:%s]" % (opt.fe_path))
         else:
             print("Generator without load fe")
