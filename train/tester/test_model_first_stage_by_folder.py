@@ -4,7 +4,7 @@ import argparse
 import cv2
 import numpy as np
 import torch
-
+import shutil
 from networks import network
 
 
@@ -138,5 +138,5 @@ if __name__ == "__main__":
         # Save image
         out_rgb = out_rgb[:, :, ::-1]
 
-        cv2.imwrite(savepath_gt, img)
+        shutil.copy(readpath, savepath_gt)
         cv2.imwrite(savepath_pre, out_rgb)
