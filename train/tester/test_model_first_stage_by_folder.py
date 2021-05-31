@@ -125,12 +125,18 @@ if __name__ == "__main__":
     # Forward
     for i, item in enumerate(imglist):
         print(i, item)
+        prefix, suffix = item.split('.')
+
         readpath = os.path.join(opt.folderpath, item)
-        savepath = os.path.join(opt.savepath, item)
+
+        savepath_gt = os.path.join(opt.savepath, '{}_gt.{}'.format(prefix, suffix))
+        savepath_pre = os.path.join(opt.savepath, '{}_pre.{}'.format(prefix, suffix))
         # Get image
         img = getImage(readpath, opt)
         # Get result [H, W, C], in range [0, 255]
         out_rgb = test(img, model)
         # Save image
         out_rgb = out_rgb[:, :, ::-1]
-        cv2.imwrite(savepath, out_rgb)
+
+        cv2.imwrite(savepath_gt, img)
+        cv2.imwrite(savepath_pre, out_rgb)
