@@ -4,9 +4,11 @@
 2021/05/27 20:12
 mobilenetv2_detach_epochs67_sample10
 开始在1/10的imagenet上训练，mobilenetv2detach batchsize 64
+epoch 67
 val效果尚可 test效果很差
 
 2021/05/28 09:40
-resnet50_detach_epochs67_sample10
+resnet50_detach_epochs22_sample10
 开始在1/10的imagenet上训练，resnet50detach batchsize 56
 Namespace(activ_d='lrelu', activ_g='lrelu', angle_aug=False, b1=0.5, b2=0.999, baseroot=PosixPath('../../DATASETS/ILSVRC-256'), batch_size=56, begin_epoch=0, crop_size=256, crop_size_h=256, crop_size_w=448, cudnn_benchmark=True, epochs=101, fe_path=PosixPath('trained_models/resnet50_in_rgb_epoch150_bs512.pth'), gan_mode='no', geometry_aug=False, in_channels=1, init_gain=0.02, init_type='xavier', lambda_flow=0.0, lambda_flow_long=5.0, lambda_flow_short=3.0, lambda_gan=1.0, lambda_gp=10.0, lambda_l1=10.0, lambda_percep=5.0, load_fe=True, load_model=False, load_path=PosixPath('.'), load_perceptual=True, log_path=PosixPath('log.csv'), lr_d=0.0001, lr_decrease_epoch=10, lr_decrease_factor=0.5, lr_g=0.0001, mask_para=50.0, multi_gpu=True, norm='in', num_workers=8, out_channels=3, pad='reflect', perceptual_path=PosixPath('trained_models/vgg16-397923af.pth'), pwcnet_path=PosixPath('trained_models/pwcNet-default.pytorch'), sample_path=PosixPath('samples'), sample_size=10, save_by_epoch=1, save_path=PosixPath('models'), scale_max=1.0, scale_min=1.0, stage='First', start_channels=32, testroot=PosixPath('../../DATASETS/ILSVRC/Data/DET/test'), video_class_txt=PosixPath('txt/DAVIS_videvo_train_class.txt'), video_imagelist_txt=PosixPath('txt/DAVIS_videvo_train_imagelist.txt'), weight_decay=0)
+epoch 22

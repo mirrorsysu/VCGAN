@@ -48,7 +48,7 @@ python train.py \
 --init_gain 0.02 \
 --baseroot '../../DATASETS/ILSVRC-256/' \
 --testroot '../../DATASETS/ILSVRC/Data/DET/test/' \
---sample_size 10 \
+--sample_size 2 \
 --crop_size 256 \
 --crop_size_h 256 \
 --crop_size_w 448 \
