@@ -3,7 +3,9 @@ samples/
 results/
 trained_models/*
 checkpoints/
-log.csv
+first_stage_all_results/
+first_stage_results/
+*.csv
 
 # Mac
 *.DS_Store

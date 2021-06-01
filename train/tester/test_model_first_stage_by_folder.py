@@ -108,7 +108,7 @@ if __name__ == "__main__":
     # ----------------------------------------
     #        Choose CUDA visible devices
     # ----------------------------------------
-    os.environ["CUDA_VISIBLE_DEVICES"] = opt.test_gpu
+    # os.environ["CUDA_VISIBLE_DEVICES"] = opt.test_gpu
     print("Single-GPU mode, %s GPU is used" % (opt.test_gpu))
 
     # ----------------------------------------
