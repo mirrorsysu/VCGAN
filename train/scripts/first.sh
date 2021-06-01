@@ -2,13 +2,13 @@ source activate slowmo
 python train.py \
 --stage 'First' \
 --log_path './log.csv' \
---load_model False \
---load_path '' \
+--load_model True \
+--load_path './models/First_Stage_epoch50_bs56.pth' \
 --load_fe True \
 --fe_path './trained_models/resnet50_in_rgb_epoch150_bs512.pth' \
 --load_perceptual True \
 --perceptual_path 'trained_models/vgg16-397923af.pth' \
---begin_epoch 0 \
+--begin_epoch 51 \
 \
 --save_by_epoch 1 \
 --save_path './models' \
@@ -48,7 +48,7 @@ python train.py \
 --init_gain 0.02 \
 --baseroot '../../DATASETS/ILSVRC-256/' \
 --testroot '../../DATASETS/ILSVRC/Data/DET/test/' \
---sample_size 2 \
+--sample_size 1 \
 --crop_size 256 \
 --crop_size_h 256 \
 --crop_size_w 448 \
