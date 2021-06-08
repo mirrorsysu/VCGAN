@@ -182,7 +182,7 @@ def trainer_LSGAN(opt):
         generator = generator.cuda()
         discriminator = nn.DataParallel(discriminator)
         discriminator = discriminator.cuda()
-        perceptualnet = nn.DataParallel(generator)
+        perceptualnet = nn.DataParallel(perceptualnet)
         perceptualnet = perceptualnet.cuda()
     else:
         generator = generator.cuda()
@@ -338,16 +338,8 @@ def trainer_WGAN(opt):
     cudnn.benchmark = opt.cudnn_benchmark
 
     # configurations
-    if not os.path.exists(opt.save_path):
-        os.makedirs(opt.save_path)
-    if not os.path.exists(opt.sample_path):
-        os.makedirs(opt.sample_path)
-
-    # Handle multiple GPUs
-    gpu_num = torch.cuda.device_count()
-    print("There are %d GPUs used" % gpu_num)
-    opt.batch_size *= gpu_num
-    opt.num_workers *= gpu_num
+    opt.save_path.mkdir(parents=True, exist_ok=True)
+    opt.sample_path.mkdir(parents=True, exist_ok=True)
 
     # Loss functions
     criterion_L1 = torch.nn.L1Loss().cuda()
@@ -357,13 +349,15 @@ def trainer_WGAN(opt):
     discriminator = utils.create_discriminator(opt)
     perceptualnet = utils.create_perceptualnet(opt)
 
-    # To device
+    # Handle multiple GPUs
+    gpu_num = torch.cuda.device_count()
+    print("There are %d GPUs used" % gpu_num)
     if opt.multi_gpu:
         generator = nn.DataParallel(generator)
         generator = generator.cuda()
         discriminator = nn.DataParallel(discriminator)
         discriminator = discriminator.cuda()
-        perceptualnet = nn.DataParallel(generator)
+        perceptualnet = nn.DataParallel(perceptualnet)
         perceptualnet = perceptualnet.cuda()
     else:
         generator = generator.cuda()
@@ -373,56 +367,40 @@ def trainer_WGAN(opt):
     # Optimizers
     optimizer_G = torch.optim.Adam(generator.parameters(), lr=opt.lr_g, betas=(opt.b1, opt.b2))
     optimizer_D = torch.optim.Adam(discriminator.parameters(), lr=opt.lr_d, betas=(opt.b1, opt.b2))
+    fieldnames = ["Epoch", "Batch", "Pixel-level Loss", "Perceptual Loss"]
+    with open(opt.log_path, "w+") as fp:
+        writer = csv.DictWriter(fp, fieldnames=fieldnames)
+        writer.writeheader()
 
     # Learning rate decrease
-    def adjust_learning_rate(opt, epoch, iteration, optimizer):
-        # Set the learning rate to the initial LR decayed by "lr_decrease_factor" every "lr_decrease_epoch" epochs
-        if opt.lr_decrease_mode == "epoch":
+    def adjust_learning_rate(opt, epoch, optimizer):
             lr = opt.lr_g * (opt.lr_decrease_factor ** (epoch // opt.lr_decrease_epoch))
-            for param_group in optimizer.param_groups:
-                param_group["lr"] = lr
-        if opt.lr_decrease_mode == "iter":
-            lr = opt.lr_g * (opt.lr_decrease_factor ** (iteration // opt.lr_decrease_iter))
             for param_group in optimizer.param_groups:
                 param_group["lr"] = lr
 
     # Save the model if pre_train == True
-    def save_model(opt, epoch, iteration, len_dataset, generator):
+    def save_model(opt, epoch, generator):
         """Save the model at "checkpoint_interval" and its multiple"""
-        if opt.save_mode == "epoch":
-            model_name = "First_Stage_epoch%d_bs%d.pth" % (epoch, opt.batch_size)
-        if opt.save_mode == "iter":
-            model_name = "First_Stage_iter%d_bs%d.pth" % (iteration, opt.batch_size)
+        model_name = "First_Stage_epoch%d_bs%d.pth" % (epoch, opt.batch_size)
         save_name = os.path.join(opt.save_path, model_name)
+        to_save = generator
         if opt.multi_gpu == True:
-            if opt.save_mode == "epoch":
-                if (epoch % opt.save_by_epoch == 0) and (iteration % len_dataset == 0):
-                    torch.save(generator.module.state_dict(), save_name)
-                    print("The trained model is saved as %s" % (model_name))
-            if opt.save_mode == "iter":
-                if iteration % opt.save_by_iter == 0:
-                    torch.save(generator.module.state_dict(), save_name)
-                    print("The trained model is saved as %s" % (model_name))
-        else:
-            if opt.save_mode == "epoch":
-                if (epoch % opt.save_by_epoch == 0) and (iteration % len_dataset == 0):
-                    torch.save(generator.state_dict(), save_name)
-                    print("The trained model is saved as %s" % (model_name))
-            if opt.save_mode == "iter":
-                if iteration % opt.save_by_iter == 0:
-                    torch.save(generator.state_dict(), save_name)
-                    print("The trained model is saved as %s" % (model_name))
+            to_save = generator.module
+        torch.save(to_save.state_dict(), save_name)
+        print("The trained model is saved as %s" % (model_name))
 
     # ----------------------------------------
     #             Network dataset
     # ----------------------------------------
 
     # Define the dataset
-    trainset = dataset.ColorizationDataset(opt)
+    trainset = dataset.ColorizationDataset(opt, train=True)
+    test_trainset = dataset.ColorizationDataset(opt, train=False)
     print("The overall number of images:", len(trainset))
 
     # Define the dataloader
     dataloader = DataLoader(trainset, batch_size=opt.batch_size, shuffle=True, num_workers=opt.num_workers, pin_memory=True)
+    test_dataloader = DataLoader(test_trainset, batch_size=1, shuffle=True, num_workers=opt.num_workers, pin_memory=True)
 
     # ----------------------------------------
     #                 Training
@@ -436,7 +414,7 @@ def trainer_WGAN(opt):
         for i, (true_L, true_RGB) in enumerate(dataloader):
 
             # To device
-            true_L = true_L[:, [0], :, :].cuda()
+            true_L = true_L.cuda()
             true_RGB = true_RGB.cuda()
 
             ### Train Discriminator
@@ -490,8 +468,16 @@ def trainer_WGAN(opt):
                 % ((epoch + 1), opt.epochs, i, len(dataloader), loss_L1.item(), loss_percep.item(), loss_D.item(), loss_GAN.item(), time_left)
             )
 
+            with open(opt.log_path, "a") as fp:
+                writer = csv.DictWriter(fp, fieldnames=fieldnames)
+                writer.writerow(dict(zip(fieldnames, [epoch, i, loss_L1.item(), loss_percep.item()])))
+            """
+            img_list = [fake_RGB, true_RGB]
+            name_list = ['pred', 'gt']
+            utils.save_sample_png(sample_folder = opt.sample_path, sample_name = 'iter%d' % (i + 1), img_list = img_list, name_list = name_list)
+            """
             # Save model at certain epochs or iterations
-            save_model(opt, (epoch + 1), (iters_done + 1), len(dataloader), generator)
+            save_model(opt, epoch, generator)
 
             # Learning rate decrease at certain epochs
             adjust_learning_rate(opt, (epoch + 1), (iters_done + 1), optimizer_G)
@@ -499,8 +485,12 @@ def trainer_WGAN(opt):
 
         ### Sample data every epoch
         if (epoch + 1) % 1 == 0:
-            img_list = [fake_RGB, true_RGB]
-            name_list = ["pred", "gt"]
+            with torch.no_grad():
+                (test_true_L, test_true_RGB) = next(test_dataloader.__iter__())
+                test_true_L = test_true_L.cuda()
+                test_fake_RGB = generator(test_true_L)
+            img_list = [fake_RGB, true_RGB, test_fake_RGB, test_true_RGB]
+            name_list = ["val_pred", "val_gt", "test_pred", "test_gt"]
             utils.save_sample_png(sample_folder=opt.sample_path, sample_name="epoch%d" % (epoch + 1), img_list=img_list, name_list=name_list)
 
 
@@ -535,7 +525,7 @@ def trainer_WGANGP(opt):
         generator = generator.cuda()
         discriminator = nn.DataParallel(discriminator)
         discriminator = discriminator.cuda()
-        perceptualnet = nn.DataParallel(generator)
+        perceptualnet = nn.DataParallel(perceptualnet)
         perceptualnet = perceptualnet.cuda()
     else:
         generator = generator.cuda()
