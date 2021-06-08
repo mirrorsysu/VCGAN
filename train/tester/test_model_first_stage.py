@@ -8,6 +8,7 @@ import torch
 from networks import network
 from pathlib import Path
 
+
 def test(grayimg, model):
     # Forward and reshape to [H, W, C], in range [-1, 1]
     out_rgb = model(grayimg)
@@ -37,10 +38,13 @@ def getImage(imgpath):
 def load_model(opt, index):
     model = network.FirstStageNet(opt)
     load_path = opt.load_name
-    if '%' in load_path:
+    if "%" in load_path:
         load_path = load_path % (index)
-    print('load:', load_path)
-    pretrained_dict = torch.load(load_path)
+    print("load:", load_path)
+    if opt.test_gpu == "-1":
+        pretrained_dict = torch.load(load_path, map_location=opt.device)
+    else:
+        pretrained_dict = torch.load(load_path)
 
     # Get the dict from processing network
     process_dict = model.state_dict()
@@ -52,6 +56,7 @@ def load_model(opt, index):
     model.load_state_dict(process_dict)
     model = model.to(opt.device)
     return model, load_path
+
 
 def check_path(path):
     if not os.path.exists(path):
@@ -76,7 +81,9 @@ if __name__ == "__main__":
         default="./first_stage_all_results",
         help="saving folder path",
     )
-    parser.add_argument("--load_name", type=str, default="./models/First_Stage_epoch%d_bs56.pth", help="load the pre-trained model with certain epoch")
+    parser.add_argument(
+        "--load_name", type=str, default="./models/First_Stage_epoch%d_bs56.pth", help="load the pre-trained model with certain epoch"
+    )
     parser.add_argument("--start", type=int, default=0, help="the start of test model")
     parser.add_argument("--end", type=int, default=0, help="the end of test model")
 
@@ -120,5 +127,5 @@ if __name__ == "__main__":
         out_rgb = out_rgb[:, :, ::-1]
 
         # Print
-        savepath_pre = os.path.join(opt.savepath, '{}.jpg'.format(Path(load_path).stem))
+        savepath_pre = os.path.join(opt.savepath, "{}.jpg".format(Path(load_path).stem))
         cv2.imwrite(savepath_pre, out_rgb)

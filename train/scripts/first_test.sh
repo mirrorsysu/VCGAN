@@ -2,5 +2,5 @@ source activate slowmo
 python -m tester.test_model_first_stage_by_folder \
 --folderpath '../../DATASETS/ILSVRC/Data/DET/test/' \
 --savepath './first_stage_results' \
---load_name './models/First_Stage_epoch50_bs56.pth' \
+--load_name './models/First_Stage_epoch100_bs56.pth' \
 --test_gpu -1

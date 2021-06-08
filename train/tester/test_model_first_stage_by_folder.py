@@ -125,12 +125,12 @@ if __name__ == "__main__":
     # Forward
     for i, item in enumerate(imglist):
         print(i, item)
-        prefix, suffix = item.split('.')
+        prefix, suffix = item.split(".")
 
         readpath = os.path.join(opt.folderpath, item)
 
-        savepath_gt = os.path.join(opt.savepath, '{}_gt.{}'.format(prefix, suffix))
-        savepath_pre = os.path.join(opt.savepath, '{}_pre.{}'.format(prefix, suffix))
+        savepath_gt = os.path.join(opt.savepath, "{}_gt.{}".format(prefix, suffix))
+        savepath_pre = os.path.join(opt.savepath, "{}_pre.{}".format(prefix, suffix))
         # Get image
         img = getImage(readpath, opt)
         # Get result [H, W, C], in range [0, 255]

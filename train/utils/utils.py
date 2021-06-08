@@ -25,7 +25,7 @@ def create_generator(opt):
         network.weights_init(colorizationnet, init_type=opt.init_type, init_gain=opt.init_gain)
         if opt.load_fe:
             pretrained_dict = torch.load(opt.fe_path)
-            load_dict(colorizationnet.fenet, pretrained_dict, 'fenet')
+            load_dict(colorizationnet.fenet, pretrained_dict, "fenet")
             # load_dict(colorizationnet.fenet2, pretrained_dict, 'fenet2')
             print("Generator is loaded [fenet:%s]" % (opt.fe_path))
         else:
